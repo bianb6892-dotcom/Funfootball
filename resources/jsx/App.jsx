@@ -10,13 +10,20 @@ import { Gacha } from './pages/user/Gacha';
 import { Collection } from './pages/user/Collection';
 import { Lineup } from './pages/user/Lineup';
 import { Match } from './pages/user/Match';
+import { FunMatch } from './pages/user/FunMatch';
+import { Events } from './pages/user/Events';
+import { EventDetail } from './pages/user/EventDetail';
 import { History } from './pages/user/History';
 import { Profile } from './pages/user/Profile';
+import { Mail } from './pages/user/Mail';
 import { AdminDashboard } from './pages/admin/Dashboard';
 import { AdminPlayers } from './pages/admin/Players';
 import { AdminGacha } from './pages/admin/Gacha';
 import { AdminUsers } from './pages/admin/Users';
 import { AdminMatches } from './pages/admin/Matches';
+import { AdminFunTeams } from './pages/admin/FunTeams';
+import { AdminEvents } from './pages/admin/Events';
+import { AdminMail } from './pages/admin/Mail';
 
 const userRoutes = [
     { path: '/', el: <Dashboard /> },
@@ -25,7 +32,11 @@ const userRoutes = [
     { path: '/collection', el: <Collection /> },
     { path: '/lineup', el: <Lineup /> },
     { path: '/match', el: <Match /> },
+    { path: '/fun-match', el: <FunMatch /> },
+    { path: '/events', el: <Events /> },
+    { path: '/events/:id', el: <EventDetail /> },
     { path: '/history', el: <History /> },
+    { path: '/mail', el: <Mail /> },
     { path: '/profile', el: <Profile /> },
 ];
 
@@ -35,6 +46,9 @@ const adminRoutes = [
     { path: '/admin/gacha', el: <AdminGacha /> },
     { path: '/admin/users', el: <AdminUsers /> },
     { path: '/admin/matches', el: <AdminMatches /> },
+    { path: '/admin/fun-teams', el: <AdminFunTeams /> },
+    { path: '/admin/events', el: <AdminEvents /> },
+    { path: '/admin/mail', el: <AdminMail /> },
     { path: '/profile', el: <Profile /> },
 ];
 

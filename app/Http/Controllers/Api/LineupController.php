@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lineup;
+use App\Models\Player;
 use App\Services\GameService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,8 +22,10 @@ class LineupController extends Controller
 
     public function save(Request $request)
     {
+        $formations = implode(',', array_keys(GameService::FORMATIONS));
+
         $data = $request->validate([
-            'formation' => 'required|in:4-3-3,4-4-2,4-2-3-1,3-4-3,3-5-2,5-3-2',
+            'formation' => "required|in:{$formations}",
             'starters' => 'required|array|size:11',
             'starters.*.slot_id' => 'required|string',
             'starters.*.player_id' => 'required|integer|exists:players,id',
@@ -42,6 +45,20 @@ class LineupController extends Controller
         }
         if (count(array_diff($usedIds, $ownedIds)) > 0) {
             return response()->json(['message' => 'You can only use players from your collection.'], 422);
+        }
+
+        // Pemain yang sama (nama sama) tidak boleh dipakai dua kali walau beda kartu.
+        $usedNames = Player::whereIn('id', array_values(array_unique($usedIds)))->pluck('name', 'id');
+        $nameKeys = [];
+        foreach ($usedIds as $pid) {
+            $key = mb_strtolower(trim((string) ($usedNames[$pid] ?? '')));
+            if ($key === '') {
+                continue;
+            }
+            if (isset($nameKeys[$key])) {
+                return response()->json(['message' => 'Pemain yang sama tidak boleh dipakai dua kali (walau beda kartu).'], 422);
+            }
+            $nameKeys[$key] = true;
         }
 
         $formation = GameService::FORMATIONS[$data['formation']];
@@ -81,28 +98,47 @@ class LineupController extends Controller
     {
         $starters = [];
         $adjusted = [];
+        $players = [];
         $penaltyTotal = 0;
 
         foreach ($lineup->slots->where('is_bench', false) as $slot) {
             if (! $slot->player) {
                 continue;
             }
-            $adj = GameService::adjustedOvr($slot->player, $slot->slot_position);
+            $adj = GameService::adjustedOvr($slot->player, $slot->slot_position, $slot->slot_id);
             $adjusted[] = $adj['ovr'];
+            $players[] = $slot->player;
             $penaltyTotal += abs($adj['penalty']);
             $starters[] = [
                 'slot_id' => $slot->slot_id, 'slot_position' => $slot->slot_position,
                 'player' => $slot->player, 'adjusted_ovr' => $adj['ovr'],
                 'penalty' => $adj['penalty'], 'compat' => $adj['compat'],
+                'pos_penalty' => $adj['pos_penalty'], 'foot_penalty' => $adj['foot_penalty'],
+                'foot_compat' => $adj['foot_compat'], 'slot_side' => $adj['slot_side'],
+                'is_natural' => $adj['is_natural'], 'natural_positions' => $adj['natural_positions'],
             ];
         }
+
+        $strength = GameService::teamStrength($adjusted, $players);
+        foreach ($starters as $i => &$starter) {
+            $starter['chemistry'] = $strength['chemistry']['per_player'][$i] ?? 0;
+        }
+        unset($starter);
 
         return [
             'formation' => $lineup->formation,
             'formations' => GameService::FORMATIONS,
             'starters' => $starters,
             'bench' => $lineup->slots->where('is_bench', true)->map(fn ($s) => $s->player)->filter()->values(),
-            'team_ovr' => GameService::teamOvr($adjusted),
+            'team_ovr' => $strength['ovr'],
+            'base_team_ovr' => $strength['base'],
+            'chemistry' => $strength['chemistry']['points'],
+            'chemistry_possible' => $strength['chemistry']['possible'],
+            'chemistry_bonus' => $strength['bonus'],
+            'chemistry_links' => [
+                'club' => $strength['chemistry']['club_links'],
+                'nation' => $strength['chemistry']['nation_links'],
+            ],
             'filled' => count($starters),
             'penalty_total' => $penaltyTotal,
         ];

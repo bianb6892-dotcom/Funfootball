@@ -9,7 +9,8 @@ class FootballMatch extends Model
     protected $table = 'matches';
 
     protected $fillable = [
-        'challenger_id', 'opponent_id', 'challenger_ovr', 'opponent_ovr',
+        'challenger_id', 'opponent_id', 'fun_team_id', 'difficulty',
+        'challenger_ovr', 'opponent_ovr',
         'challenger_score', 'opponent_score', 'result', 'snapshot', 'played_at',
     ];
 

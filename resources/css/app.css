@@ -101,10 +101,11 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(91,124,25
 
 /* ---------- packs & gacha ---------- */
 .pack-card {
-    position: relative; border-radius: 24px; overflow: hidden; cursor: pointer;
+    position: relative; border-radius: 24px; overflow: hidden;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     background: linear-gradient(135deg, rgba(19,32,61,0.9), rgba(5,11,26,0.95));
     border: 1px solid rgba(124,140,255,0.25);
+    height: 100%;
 }
 .pack-card:hover {
     transform: translateY(-8px) scale(1.02);
@@ -114,17 +115,263 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(91,124,25
     position: relative; z-index: 1;
     background: linear-gradient(135deg, rgba(15,26,51,0.98), rgba(5,11,26,1));
     border-radius: 23px; margin: 1px;
+    height: calc(100% - 2px);
+    display: flex; flex-direction: column;
 }
+/* Zona purchase selalu di dasar card & di dalam batas card. */
+.pack-buy {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    width: 100%; margin-top: auto; padding-top: 12px;
+}
+.pack-buy > * { min-width: 0; }
 @keyframes packPulse {
-    0%, 100% { filter: drop-shadow(0 0 8px rgba(124,140,255,0.6)); }
-    50% { filter: drop-shadow(0 0 20px rgba(124,140,255,0.95)); }
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.04); opacity: 0.92; }
 }
-.pack-pulse { animation: packPulse 2.5s ease-in-out infinite; }
+/* Pulse pakai transform+opacity saja (GPU) — drop-shadow dihapus karena bikin patah. */
+.pack-pulse { animation: packPulse 3.4s ease-in-out infinite; will-change: transform, opacity; }
 
-.rank-bronze  { border-color: rgba(205,127,50,0.7);  background: linear-gradient(135deg, rgba(80,45,20,0.9), rgba(40,20,5,0.9)); }
-.rank-silver  { border-color: rgba(192,192,192,0.75); background: linear-gradient(135deg, rgba(70,75,80,0.9), rgba(30,35,40,0.9)); }
-.rank-gold    { border-color: rgba(212,175,55,0.85);  background: linear-gradient(135deg, rgba(120,85,20,0.9), rgba(60,40,8,0.9)); }
-.rank-diamond { border-color: rgba(120,220,255,0.85); background: linear-gradient(135deg, rgba(20,80,110,0.9), rgba(5,30,55,0.9)); }
+/* ---------- rank cards: identitas visual per rank ----------
+   Diamond > Gold > Silver > Bronze. Tiap rank punya karakter sendiri
+   (efek, border, badge, tekstur) — bukan sekadar beda warna.
+   Layout, ukuran card, posisi teks, dan struktur info TIDAK diubah.
+   Area teks bawah digelapkan agar tulisan putih tetap terbaca. */
+
+/* 🥉 BRONZE — copper kasar: tekstur anyaman + glow paling rendah. */
+.rank-bronze {
+    border: 1px solid rgba(205,127,50,0.85);
+    background:
+        linear-gradient(180deg, transparent 28%, rgba(12,6,2,0.74) 100%),
+        repeating-linear-gradient(45deg, rgba(255,220,180,0.055) 0 2px, transparent 2px 5px),
+        repeating-linear-gradient(-45deg, rgba(0,0,0,0.12) 0 2px, transparent 2px 6px),
+        linear-gradient(135deg, #cf9250 0%, #96602e 32%, #5f3c1b 62%, #3a2312 85%, #241407 100%);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.7), 0 0 10px rgba(205,127,50,0.20), inset 0 1px 0 rgba(255,220,180,0.28);
+}
+/* 🥈 SILVER — platinum halus: pita metalik kontras rendah + glow rendah. */
+.rank-silver {
+    border: 1px solid rgba(228,233,240,0.9);
+    background:
+        linear-gradient(180deg, transparent 28%, rgba(8,10,14,0.74) 100%),
+        repeating-linear-gradient(115deg, rgba(255,255,255,0.07) 0 3px, transparent 3px 10px),
+        linear-gradient(135deg, #f4f7fa 0%, #c6ccd5 30%, #99a1ac 52%, #d3d9e1 74%, #7d848e 100%);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.7), 0 0 14px rgba(200,210,222,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+/* 🥇 GOLD — emas premium: metalik jelas, border tebal, glow sedang. */
+.rank-gold {
+    border: 2px solid #f0d060;
+    background:
+        linear-gradient(180deg, transparent 30%, rgba(22,13,2,0.76) 100%),
+        repeating-linear-gradient(115deg, rgba(255,246,200,0.15) 0 4px, transparent 4px 13px),
+        linear-gradient(135deg, #f9e68a 0%, #e9c654 26%, #a97f1f 50%, #e3b93e 74%, #7a5c12 100%);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.7), 0 0 24px rgba(212,175,55,0.45), 0 0 60px rgba(212,175,55,0.18), inset 0 1px 0 rgba(255,250,220,0.6);
+}
+/* 💜 DIAMOND — ungu dark elegan: plum pekat ke hitam keunguan +
+   sentuhan kilau lavender. Gelap sehingga teks putih selalu terbaca. */
+.rank-diamond {
+    border: 2px solid rgba(196,181,253,0.9);
+    background:
+        linear-gradient(180deg, transparent 30%, rgba(10,4,16,0.80) 100%),
+        repeating-linear-gradient(115deg, rgba(196,181,253,0.08) 0 3px, transparent 3px 10px),
+        linear-gradient(135deg, #3b1a45 0%, #24102e 48%, #120818 100%);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.75), 0 0 30px rgba(139,92,246,0.45), 0 0 80px rgba(139,92,246,0.18), inset 0 0 18px rgba(139,92,246,0.12), inset 0 1px 0 rgba(237,233,254,0.35);
+}
+/* Hover: pertahankan identitas rank (jangan jadi biru), glow menguat. */
+.ff-card.rank-bronze.hoverable:hover { border-color: rgba(230,170,110,0.95); box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 18px rgba(205,127,50,0.35); }
+.ff-card.rank-silver.hoverable:hover { border-color: #ffffff; box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 24px rgba(200,210,222,0.40); }
+.ff-card.rank-gold.hoverable:hover   { border-color: #fff3b0; box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 36px rgba(212,175,55,0.60), 0 0 80px rgba(212,175,55,0.25); }
+.ff-card.rank-diamond.hoverable:hover { border-color: #ede9fe; box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 44px rgba(139,92,246,0.65), 0 0 110px rgba(139,92,246,0.28); }
+/* 👑 LEGEND — marmer putih-emas ala referensi: ivory terang berurat emas,
+    FRAME TEBAL BERMOTIF: border 3px emas + bingkai stripes emas (::before).
+    Teks body digelapkan (coklat tua) agar terbaca di atas marmer terang.
+    Foto disepia ringan agar senada (seperti referensi). */
+.rank-legend {
+    border: 3px solid #d9b96a;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0) 25%, rgba(255,252,240,0) 55%, rgba(122,92,18,0.14) 100%),
+        repeating-linear-gradient(115deg, rgba(184,144,58,0.10) 0 2px, transparent 2px 7px),
+        repeating-linear-gradient(25deg, rgba(184,144,58,0.06) 0 1px, transparent 1px 5px),
+        radial-gradient(55% 38% at 18% 8%, rgba(255,255,255,0.85), transparent 70%),
+        radial-gradient(45% 32% at 85% 30%, rgba(240,205,86,0.20), transparent 70%),
+        linear-gradient(135deg, #fffdf6 0%, #f7eed4 28%, #e7d6ab 52%, #f9f2df 76%, #dccb9e 100%);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8), 0 0 30px rgba(217,185,106,0.55), 0 0 80px rgba(217,185,106,0.22), inset 0 0 0 1px rgba(255,250,230,0.5), inset 0 1px 0 rgba(255,252,240,0.8);
+}
+/* Foto legend: sepia ringan + fade krem (bukan navy) agar menyatu marmer. */
+.ff-card.rank-legend .pc-photo img { filter: sepia(0.45) saturate(0.85) contrast(1.03); }
+.ff-card.rank-legend .pc-fade { background: linear-gradient(180deg, transparent 50%, rgba(247,238,212,0.92) 100%); }
+/* Teks body legend digelapkan (nama, klub, footer) — badge & pill tak tersentuh. */
+.ff-card.rank-legend h2.font-display { color: #3a2a06; }
+.ff-card.rank-legend:hover h2.font-display { color: #3a2a06; }
+.ff-card.rank-legend p.text-xs { color: #6b5a2a; }
+.ff-card.rank-legend .pt-3 { color: #6b5a2a; border-top-color: rgba(122,92,18,0.4); }
+.ff-card.rank-legend .pt-3 .text-midnight-200 { color: #3a2a06; }
+/* Hover: identitas emas terjaga, glow menguat. */
+.ff-card.rank-legend.hoverable:hover { border-color: #f3df9f; box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 40px rgba(217,185,106,0.65), 0 0 90px rgba(217,185,106,0.28); }
+.ff-card.rank-potw.hoverable:hover { border-color: #d6ffc9; box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 36px rgba(89,199,73,0.60), 0 0 80px rgba(89,199,73,0.28); }
+
+/* ⭐ POTW — penghargaan mingguan: Mantis Green (#59C749) + dark/black-green + white.
+   Bukan Diamond hijau: tanpa hologram pelangi & tanpa pita metalik —
+   melainkan bingkai energi + ornamen sudut geometris + badge award. */
+.rank-potw {
+    border: 2px solid #59C749;
+    background:
+        linear-gradient(180deg, transparent 26%, rgba(3,10,4,0.78) 100%),
+        repeating-linear-gradient(65deg, rgba(89,199,73,0.09) 0 3px, transparent 3px 11px),
+        radial-gradient(60% 40% at 50% 0%, rgba(89,199,73,0.22), transparent 70%),
+        linear-gradient(135deg, #123a17 0%, #0a2410 50%, #041007 100%);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.75), 0 0 24px rgba(89,199,73,0.42), 0 0 64px rgba(89,199,73,0.18), inset 0 1px 0 rgba(214,255,201,0.45);
+}
+/* Ornamen sudut geometris: braket energi di 4 sudut frame (khas POTW). */
+.ff-card.rank-potw::before {
+    content: ''; position: absolute; inset: 7px; border-radius: 1.1rem; pointer-events: none;
+    background:
+        linear-gradient(#7ee86a, #7ee86a) left top / 26px 3px,
+        linear-gradient(#7ee86a, #7ee86a) left top / 3px 26px,
+        linear-gradient(#7ee86a, #7ee86a) right top / 26px 3px,
+        linear-gradient(#7ee86a, #7ee86a) right top / 3px 26px,
+        linear-gradient(#7ee86a, #7ee86a) left bottom / 26px 3px,
+        linear-gradient(#7ee86a, #7ee86a) left bottom / 3px 26px,
+        linear-gradient(#7ee86a, #7ee86a) right bottom / 26px 3px,
+        linear-gradient(#7ee86a, #7ee86a) right bottom / 3px 26px;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 0 5px rgba(89,199,73,0.9));
+    opacity: 0.9;
+}
+.ff-card.rank-potw > * { position: relative; z-index: 1; }
+
+/* Kilau bergerak khas tiap rank (kecepatan & intensitas = hierarki).
+   Dijepit di dalam card: tanpa overhang + radius eksplisit (inherit mengambil
+   radius induk, bukan card) + overflow hidden khusus .ff-card.rank-*
+   (scope ini agar badge OVR di .slot-circle tidak terpotong). */
+.ff-card.rank-bronze,
+.ff-card.rank-silver,
+.ff-card.rank-gold,
+.ff-card.rank-diamond,
+.ff-card.rank-legend,
+.ff-card.rank-potw { overflow: hidden; }
+.ff-card.rank-bronze::after,
+.ff-card.rank-gold::after,
+.ff-card.rank-silver::after,
+.ff-card.rank-diamond::after,
+.ff-card.rank-legend::after,
+.ff-card.rank-potw::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 55%;
+    transform: translateX(-180%) skewX(-18deg);
+    pointer-events: none; border-radius: 1.5rem;
+}
+.ff-card.rank-bronze::after {
+    background: linear-gradient(100deg, transparent 0%, rgba(255,220,180,0.10) 50%, transparent 100%);
+    animation: bronzeGleam 8s ease-in-out infinite;
+}
+.ff-card.rank-silver::after {
+    background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.16) 50%, transparent 100%);
+    animation: silverSheen 7s ease-in-out infinite;
+}
+.ff-card.rank-gold::after {
+    background: linear-gradient(100deg, transparent 0%, rgba(255,246,200,0.12) 30%, rgba(255,255,255,0.30) 50%, rgba(255,246,200,0.12) 70%, transparent 100%);
+    animation: goldShine 5.5s ease-in-out infinite;
+}
+.ff-card.rank-diamond::after {
+    background: linear-gradient(100deg, transparent 0%, rgba(196,181,253,0.12) 28%, rgba(255,255,255,0.30) 50%, rgba(167,139,250,0.14) 72%, transparent 100%);
+    animation: violetSweep 4.5s ease-in-out infinite;
+}
+.ff-card.rank-potw::after {
+    background: linear-gradient(100deg, transparent 0%, rgba(89,199,73,0.10) 30%, rgba(214,255,201,0.28) 50%, rgba(89,199,73,0.10) 70%, transparent 100%);
+    animation: potwSweep 6s ease-in-out infinite;
+}
+/* Bingkai motif legend: ring stripes emas-putih di dalam frame. */
+.ff-card.rank-legend::before {
+    content: ''; position: absolute; inset: 7px; border-radius: 1.1rem; pointer-events: none;
+    padding: 5px;
+    background: repeating-linear-gradient(45deg, #f3df9f 0 8px, #cfd4da 8px 16px);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 4px rgba(217,185,106,0.6));
+}
+/* Kilau emas legend yang lewat perlahan. */
+.ff-card.rank-legend::after {
+    background: linear-gradient(100deg, transparent 0%, rgba(247,231,180,0.12) 30%, rgba(255,255,255,0.32) 50%, rgba(154,160,168,0.14) 70%, transparent 100%);
+    animation: legendSweep 6s ease-in-out infinite;
+}
+@keyframes legendSweep {
+    0%, 55% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+    70% { opacity: 1; }
+    100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+@keyframes potwSweep {
+    0%, 52% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+    67% { opacity: 1; }
+    100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+@keyframes bronzeGleam {
+    0%, 60% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+    75% { opacity: 1; }
+    100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+@keyframes silverSheen {
+    0%, 55% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+    70% { opacity: 1; }
+    100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+@keyframes goldShine {
+    0%, 50% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+    65% { opacity: 1; }
+    100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+@keyframes violetSweep {
+    0%, 45% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+    60% { opacity: 1; }
+    100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+/* Kilau ungu Diamond: cahaya radial lembut (lavender/violet) yang bergeser
+   sangat pelan — elegan dan redup agar tulisan tetap terbaca.
+   Konten card diangkat di atas lapisan efek. */
+.ff-card.rank-diamond::before {
+    content: ''; position: absolute; inset: 0; border-radius: 1.5rem; pointer-events: none;
+    background-image:
+        radial-gradient(38% 30% at 20% 15%, rgba(196,181,253,0.16), transparent 70%),
+        radial-gradient(34% 30% at 82% 30%, rgba(167,139,250,0.14), transparent 70%),
+        radial-gradient(40% 34% at 55% 85%, rgba(124,58,237,0.12), transparent 70%);
+    animation: auroraDrift 12s ease-in-out infinite alternate;
+}
+@keyframes auroraDrift {
+    from { background-position: 0% 0%, 100% 20%, 50% 100%; }
+    to { background-position: 12% 10%, 88% 32%, 44% 88%; }
+}
+.ff-card.rank-diamond > * { position: relative; z-index: 1; }
+.ff-card.rank-legend > * { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) {
+    .fc-walkout,
+    .fc-item,
+    .fc-ovr-pop,
+    .fc-beams::before,
+    .fc-beams::after,
+    .fc-shine,
+    .fc-confetti,
+    .fc-shake,
+    .gacha-flag-wrap,
+    .gacha-stage-fill { animation: none; transition: none; }
+    .ff-card.rank-bronze::after,
+    .ff-card.rank-silver::after,
+    .ff-card.rank-gold::after,
+    .ff-card.rank-diamond::after,
+    .ff-card.rank-legend::after,
+    .ff-card.rank-potw::after,
+    .ff-card.rank-ucl::after,
+    .ff-card.rank-halloween::after,
+    .ff-card.rank-halloween .hw-bat,
+    .ff-card.rank-halloween .hw-spider,
+    .ff-card.rank-halloween .hw-stars,
+    .ff-card.rank-halloween .hw-pumpkin,
+    .ff-card.rank-diamond::before,
+    .ff-card.rank-legend::before,
+    .ff-card.rank-potw::before,
+    .rank-badge.diamond,
+    .rank-badge.legend,
+    .rank-badge.potw { animation: none; }
+}
 
 .rank-badge {
     padding: 3px 10px; border-radius: 999px;
@@ -133,35 +380,172 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(91,124,25
     display: inline-flex; align-items: center; gap: 4px;
     white-space: nowrap;
 }
-.rank-badge.bronze  { background: rgba(205,127,50,0.25);  color: #e8a76e; border: 1px solid rgba(205,127,50,0.7); }
-.rank-badge.silver  { background: rgba(192,192,192,0.2);  color: #e2e8f0; border: 1px solid rgba(192,192,192,0.7); }
-.rank-badge.gold    { background: rgba(212,175,55,0.25);  color: #f3c760; border: 1px solid rgba(212,175,55,0.8); }
-.rank-badge.diamond { background: rgba(120,220,255,0.2);  color: #a5e8ff; border: 1px solid rgba(120,220,255,0.8); }
-
-@keyframes revealFlip {
-    0%   { transform: rotateY(0deg) scale(0.8); opacity: 0; }
-    50%  { transform: rotateY(180deg) scale(1.05); opacity: 0.5; }
-    100% { transform: rotateY(360deg) scale(1); opacity: 1; }
+/* Badge logam: bronze kasar, silver platinum, gold emas, diamond ungu dark, legend golden creamer. */
+.rank-badge.bronze {
+    background:
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.14) 0 2px, transparent 2px 4px),
+        linear-gradient(135deg, #d89a5b 0%, #a06a35 50%, #5f3a1c 100%);
+    color: #ffe9cf; border: 1px solid rgba(230,170,110,0.85);
+    box-shadow: 0 0 8px rgba(205,127,50,0.25), inset 0 1px 0 rgba(255,233,207,0.4), inset 0 -1px 0 rgba(0,0,0,0.35);
 }
-.reveal-flip { animation: revealFlip 1.2s cubic-bezier(0.5, 1.6, 0.4, 1); }
+.rank-badge.silver {
+    background: linear-gradient(135deg, #ffffff 0%, #d4d9e0 35%, #9aa1ab 60%, #e6eaef 85%, #8b929c 100%);
+    color: #232a33; border: 1px solid rgba(240,244,248,0.9);
+    box-shadow: 0 0 10px rgba(200,210,222,0.30), inset 0 1px 0 #ffffff, inset 0 -1px 0 rgba(0,0,0,0.25);
+}
+.rank-badge.gold {
+    background: linear-gradient(135deg, #fff3b0 0%, #f0cd56 30%, #b8860b 55%, #f6dd7a 80%, #8a6414 100%);
+    color: #3a2800; border: 1px solid rgba(255,240,170,0.95);
+    box-shadow: 0 0 14px rgba(212,175,55,0.55), inset 0 1px 0 #fff8dc, inset 0 -1px 0 rgba(90,60,0,0.5);
+}
+/* Badge Diamond ungu dark: metalik plum pekat + teks lavender terang
+   agar kontras dan tidak menabrak keterbacaan. */
+.rank-badge.diamond {
+    background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 40%, #2e1065 75%, #1e0a3c 100%);
+    color: #f1e9ff; border: 1px solid rgba(216,180,254,0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    animation: violetBadgeGlow 2.8s ease-in-out infinite;
+}
+@keyframes violetBadgeGlow {
+    0%, 100% { box-shadow: 0 0 8px rgba(139,92,246,0.45), inset 0 1px 0 rgba(237,233,254,0.35); }
+    50% { box-shadow: 0 0 12px rgba(139,92,246,0.70), 0 0 26px rgba(139,92,246,0.22), inset 0 1px 0 rgba(237,233,254,0.4); }
+}
+/* Badge Legend golden creamer: krim emas terang + teks coklat tua
+   agar kontras dan tidak menabrak keterbacaan. */
+.rank-badge.legend {
+    background: linear-gradient(135deg, #fdf6dd 0%, #ecd9a0 30%, #b89b58 55%, #f3e3ae 80%, #8a7440 100%);
+    color: #3d2c07; border: 1px solid rgba(253,246,221,0.95);
+    box-shadow: 0 0 12px rgba(217,185,106,0.55), inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(61,44,7,0.4);
+    animation: legendBadgeGlow 3s ease-in-out infinite;
+}
+@keyframes legendBadgeGlow {
+    0%, 100% { box-shadow: 0 0 9px rgba(217,185,106,0.45), inset 0 1px 0 rgba(255,255,255,0.7); }
+    50% { box-shadow: 0 0 16px rgba(217,185,106,0.70), 0 0 30px rgba(217,185,106,0.25), inset 0 1px 0 rgba(255,255,255,0.75); }
+}
+/* Badge award POTW: ★ POTW — hijau mantis metalik, teks hijau tua, highlight putih. */
+.rank-badge.potw {
+    background: linear-gradient(135deg, #a5f09a 0%, #59C749 45%, #2f8f22 80%, #1e6b15 100%);
+    color: #06130a; border: 1px solid rgba(214,255,201,0.9);
+    box-shadow: 0 0 12px rgba(89,199,73,0.55), inset 0 1px 0 rgba(255,255,255,0.65), inset 0 -1px 0 rgba(6,19,10,0.4);
+    animation: potwBadgeGlow 3.2s ease-in-out infinite;
+}
+/* Badge kaki utama: tiap jenis kaki punya warna + ikon sendiri agar tidak monoton.
+   Kiri = biru langit, Kanan = hijau emerald (ikon dicerminkan), Dua kaki = emas/ungu. */
+.foot-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 9px; border-radius: 999px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.3px;
+    white-space: nowrap; border: 1px solid transparent;
+}
+.foot-badge.xs { font-size: 9px; padding: 1px 7px; gap: 4px; }
+.foot-badge.foot-left {
+    background: linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 45%, #0284c7 100%);
+    color: #082f49; border-color: rgba(224,242,254,0.9);
+    box-shadow: 0 0 8px rgba(2,132,199,0.35), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+.foot-badge.foot-right {
+    background: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 45%, #059669 100%);
+    color: #064e3b; border-color: rgba(209,250,229,0.9);
+    box-shadow: 0 0 8px rgba(5,150,105,0.35), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+.foot-badge.foot-both {
+    background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 40%, #c084fc 130%);
+    color: #451a03; border-color: rgba(254,243,199,0.95);
+    box-shadow: 0 0 10px rgba(251,191,36,0.45), inset 0 1px 0 rgba(255,255,255,0.65);
+}
+.foot-badge .foot-mirror { display: inline-block; transform: scaleX(-1); }
+@keyframes potwBadgeGlow {
+    0%, 100% { box-shadow: 0 0 9px rgba(89,199,73,0.45), inset 0 1px 0 rgba(255,255,255,0.65); }
+    50% { box-shadow: 0 0 18px rgba(89,199,73,0.75), 0 0 34px rgba(89,199,73,0.30), inset 0 1px 0 rgba(255,255,255,0.7); }
+}
 
-.sparkle {
-    position: absolute; width: 6px; height: 6px;
-    background: #f3c760; border-radius: 50%;
-    box-shadow: 0 0 12px #f3c760;
-    animation: sparkleFloat 1.5s ease-out infinite;
+/* ============ GACHA ALA FC MOBILE (GPU-only, 60fps) ============
+   Prinsip anti patah: HANYA transform + opacity yang dianimasikan.
+   filter blur/brightness/drop-shadow DILARANG di keyframe — itu penyebab
+   utama animasi kemarin patah. Semua efek cahaya pakai gradient statis
+   + gerakan translate/rotate saja. */
+@keyframes fcWalkout {
+    0% { transform: translate3d(0, 26px, 0) scale(0.92); opacity: 0; }
+    100% { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+}
+/* Kartu jalan keluar dari terowongan: zoom pelan 1.2s expo-out. */
+.fc-walkout { animation: fcWalkout 1.2s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; backface-visibility: hidden; }
+/* Grid 5x: stagger ringan tanpa blur. */
+.reveal-step { animation: fcWalkout 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+/* Item reveal FC Mobile: transition (bukan keyframe) agar transisi
+   bendera → club → posisi → OVR mulus satu-per-satu tanpa snap.
+   Durasi 1.1s expo-out = gerakan berlanjut lembut, tidak berhenti mendadak. */
+.fc-item {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0) scale(0.96);
+    transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 1s ease;
+    will-change: transform, opacity;
     pointer-events: none;
 }
-@keyframes sparkleFloat {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-80px) scale(0); opacity: 0; }
+.fc-item.is-visible { opacity: 1; transform: translate3d(0, 0, 0) scale(1); pointer-events: auto; }
+.fc-item.from-left { transform: translate3d(-76px, 0, 0) scale(0.96); }
+.fc-item.from-right { transform: translate3d(76px, 0, 0) scale(0.96); }
+.fc-item.from-left.is-visible,
+.fc-item.from-right.is-visible { transform: translate3d(0, 0, 0) scale(1); }
+/* Bendera: tidak di-unmount, hanya mengecil halus saat tahap lanjut. */
+.gacha-flag-wrap { transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 1s ease; will-change: transform, opacity; }
+.gacha-flag-wrap.is-minimized { transform: translate3d(0, -6px, 0) scale(0.84); opacity: 0.95; }
+/* Placeholder bendera: warna dasar agar tidak ada kedip kosong saat load. */
+.fc-flag-img { background: #13203d; min-width: 128px; min-height: 80px; }
+/* Mode tanpa animasi (bronze/silver): semua langsung tampil, tanpa transisi. */
+.fc-no-anim, .fc-no-anim * { animation: none !important; transition: none !important; }
+.fc-no-anim .fc-item { opacity: 1 !important; transform: none !important; pointer-events: auto; }
+.fc-no-anim .gacha-flag-wrap { transform: none !important; opacity: 1 !important; }
+/* OVR besar ala FC Mobile: pop scale halus. */
+@keyframes fcOvrPop {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
 }
+.fc-ovr-pop { animation: fcOvrPop 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+/* Sorot lampu stadion: 2 berkas cahaya berputar pelan (rotate saja = murah). */
+.fc-beams { position: absolute; inset: -40%; pointer-events: none; overflow: hidden; }
+.fc-beams::before, .fc-beams::after {
+    content: ''; position: absolute; top: 50%; left: 50%; width: 60%; height: 130%;
+    transform-origin: center; opacity: 0.16;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), transparent 70%);
+    clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+}
+.fc-beams::before { animation: fcBeamL 9s linear infinite; }
+.fc-beams::after { animation: fcBeamR 11s linear infinite reverse; }
+@keyframes fcBeamL { from { transform: translate(-50%,-50%) rotate(-18deg); } to { transform: translate(-50%,-50%) rotate(18deg); } }
+@keyframes fcBeamR { from { transform: translate(-50%,-50%) rotate(18deg); } to { transform: translate(-50%,-50%) rotate(-18deg); } }
+/* Kilau menyapu kartu ala FC Mobile: satu layer translate saja. */
+.fc-shine { position: absolute; top: 0; bottom: 0; left: 0; width: 45%; pointer-events: none;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,0.22) 50%, transparent);
+    transform: translate3d(-220%, 0, 0) skewX(-18deg); animation: fcShine 3.8s cubic-bezier(0.16,1,0.3,1) infinite; }
+@keyframes fcShine { 0% { transform: translate3d(-220%,0,0) skewX(-18deg); } 55%, 100% { transform: translate3d(480%,0,0) skewX(-18deg); } }
+/* Confetti FC Mobile: jatuh + goyang pakai translate saja, jumlah dibatasi. */
+.fc-confetti { position: absolute; top: -12px; width: 7px; height: 11px; border-radius: 2px; opacity: 0;
+    animation: fcFall 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite; will-change: transform, opacity; }
+@keyframes fcFall {
+    0% { transform: translate3d(0, -10px, 0) rotate(0deg); opacity: 0; }
+    12% { opacity: 1; }
+    100% { transform: translate3d(var(--drift, 20px), 340px, 0) rotate(540deg); opacity: 0; }
+}
+/* Pack bergetar sebelum meledak (transform saja). */
+@keyframes fcShake {
+    0%, 100% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+    20% { transform: translate3d(-6px,2px,0) rotate(-3deg) scale(1.03); }
+    40% { transform: translate3d(6px,-2px,0) rotate(3deg) scale(1.05); }
+    60% { transform: translate3d(-5px,1px,0) rotate(-2deg) scale(1.07); }
+    80% { transform: translate3d(4px,-1px,0) rotate(2deg) scale(1.09); }
+}
+.fc-shake { animation: fcShake 0.9s ease-in-out infinite; will-change: transform; }
+/* Bar progres tahap reveal (bendera → klub → nama). */
+.gacha-stage-track { transition: none; }
+.gacha-stage-fill { transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
 .gacha-overlay {
     position: fixed; inset: 0;
     background: radial-gradient(circle at center, rgba(19,32,61,0.96), rgba(5,11,26,0.98));
     backdrop-filter: blur(12px); z-index: 100;
     display: flex; align-items: center; justify-content: center; padding: 20px;
-    opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+    opacity: 0; pointer-events: none; transition: opacity 0.6s ease;
 }
 .gacha-overlay.show { opacity: 1; pointer-events: auto; }
 .coin-display {
@@ -173,13 +557,13 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(91,124,25
 /* ---------- pitch & lineup (ported from prototype) ---------- */
 .pitch {
     background:
-        radial-gradient(circle at center, rgba(49,87,213,0.30) 0%, rgba(10,18,40,0.6) 100%),
+        radial-gradient(circle at center, rgba(49,87,213,0.30) 0% 0%, rgba(10,18,40,0.6) 100%),
         repeating-linear-gradient(0deg, rgba(0,0,0,0.10) 0px, rgba(0,0,0,0.10) 60px, transparent 60px, transparent 120px);
     border: 2px solid rgba(124,140,255,0.4);
     border-radius: 20px;
     position: relative;
     aspect-ratio: 2 / 3;
-    max-width: 560px;
+    max-width: 400px;
     margin: 0 auto;
     overflow: hidden;
 }
@@ -195,26 +579,60 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(91,124,25
 .pitch-box-top { top: 0; border-top: none; }
 .pitch-box-bottom { bottom: 0; border-bottom: none; }
 
+/* Varian minimalis untuk halaman line-up: lapangan lebih besar agar lingkaran
+   pemain & foto terlihat jelas (semula 300px/42px). */
+.pitch.mini { max-width: 400px; border-radius: 16px; }
+.pitch.mini::after { width: 84px; height: 84px; }
+.pitch.mini .slot-circle { width: 58px; height: 58px; font-size: 1rem; border-width: 3px; }
+.pitch.mini .player-slot.empty .slot-circle { font-size: 1.2rem; }
+.pitch.mini .slot-label { font-size: 10px; margin-top: 4px; max-width: 86px; }
+.pitch.mini .slot-ovr-badge { min-width: 26px; height: 26px; padding: 0 5px; font-size: 12px; top: -6px; right: -6px; }
+.pitch.mini .slot-card-chip { width: 24px; height: 24px; font-size: 11px; top: -7px; left: -7px; }
+.pitch.mini .slot-penalty, .pitch.mini .slot-natural { width: 22px; height: 22px; font-size: 11px; }
+.pitch.mini .slot-card-name { top: calc(100% + 19px); font-size: 9px; }
+
 .player-slot { position: absolute; transform: translate(-50%,-50%); z-index: 5; cursor: pointer; transition: transform 0.3s ease; }
 .player-slot:hover { transform: translate(-50%,-50%) scale(1.1); z-index: 10; }
 .slot-circle {
-    width: 60px; height: 60px; border-radius: 50%; border: 3px solid;
+    width: 52px; height: 52px; border-radius: 50%; border: 3px solid;
     background-size: cover; background-position: top center;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Cinzel', serif; font-weight: 800; font-size: 1.1rem; color: #f5f7ff;
+    font-family: 'Cinzel', serif; font-weight: 800; font-size: 1rem; color: #f5f7ff;
     background-color: #0f1a33;
     box-shadow: 0 6px 20px rgba(0,0,0,0.6);
     position: relative; transition: all 0.3s ease;
 }
+/* Foto lingkaran starter dirender sebagai <img> (bukan background) agar
+   hasil render identik dengan saat file dibuka langsung — anti kasus
+   background gagal tampil. Border-radius diwarisi agar tetap lingkaran;
+   pointer-events dimatikan agar drag & drop slot tetap lewat induknya. */
+.slot-circle .slot-photo {
+    width: 100%; height: 100%; object-fit: cover; object-position: top center;
+    border-radius: inherit; pointer-events: none; user-select: none;
+}
+/* Highlight target saat pemain sedang diseret (drag & drop). */
+.player-slot.drop-ready .slot-circle {
+    border-style: dashed;
+    box-shadow: 0 0 0 3px rgba(124,140,255,0.45), 0 6px 20px rgba(0,0,0,0.6);
+}
+.player-slot.drop-ready { cursor: copy; }
+.bench-slot.drop-ready {
+    border-color: #7c8cff; border-style: solid;
+    box-shadow: 0 0 0 3px rgba(124,140,255,0.30);
+}
+.picker-item[draggable="true"], .player-slot[draggable="true"], .bench-slot[draggable="true"] { cursor: grab; }
+.picker-item[draggable="true"]:active, .player-slot[draggable="true"]:active, .bench-slot[draggable="true"]:active { cursor: grabbing; }
 .player-slot.empty .slot-circle {
     background: rgba(15,26,51,0.85);
     border: 2px dashed rgba(124,140,255,0.5);
     color: rgba(124,140,255,0.7); font-size: 1.3rem;
 }
-.slot-circle.rank-bronze  { border-color: #cd7f32; }
-.slot-circle.rank-silver  { border-color: #c0c0c0; }
-.slot-circle.rank-gold    { border-color: #d4af37; }
-.slot-circle.rank-diamond { border-color: #78dcff; }
+.slot-circle.rank-bronze  { border-color: #cd7f32; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 8px rgba(205,127,50,0.30); }
+.slot-circle.rank-silver  { border-color: #e6eaef; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 12px rgba(200,210,222,0.40); }
+.slot-circle.rank-gold    { border-color: #f0cd56; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 16px rgba(212,175,55,0.60), 0 0 30px rgba(212,175,55,0.25); }
+.slot-circle.rank-diamond { border-color: #d8b4fe; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 18px rgba(139,92,246,0.80), 0 0 40px rgba(139,92,246,0.35); }
+.slot-circle.rank-legend { border-color: #ecd9a0; border-width: 3px; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 18px rgba(217,185,106,0.80), 0 0 40px rgba(217,185,106,0.35); }
+.slot-circle.rank-potw    { border-color: #59C749; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 16px rgba(89,199,73,0.65), 0 0 34px rgba(89,199,73,0.28); }
 .slot-label {
     position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 5px;
     text-align: center; white-space: nowrap; font-size: 10px; font-weight: 700; color: #f5f7ff;
@@ -226,6 +644,63 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(91,124,25
     font-family: 'Cinzel', serif; font-weight: 800; font-size: 11px; color: #050b1a;
     box-shadow: 0 3px 10px rgba(0,0,0,0.5); z-index: 6; border: 2px solid rgba(0,0,0,0.4);
 }
+/* ============ UI POLISH — chrome/layout saja (APPENDED, aman) ============
+   Aturan di bawah HANYA menyentuh kerangka antarmuka (header, sidebar,
+   modal, toast, empty-state). Selector baru berprefix .ff- / terisolasi;
+   TIDAK ADA selector kartu pemain yang diubah di sini:
+   .rank-*, .pc-*, .rank-badge*, .foot-badge, .ovr-badge, .flashback-card,
+   .fb-*, .slot-circle*, .pack-card*, .fc-*, .gacha-*, .pitch*, .player-slot,
+   .picker-*, .bench-slot, .coin-display, .ff-card, .gold-btn, .ff-outline-btn.
+   Token warna memakai palet Midnight yang sudah ada (tidak ganti tema). */
+:root {
+    --ff-ring: rgba(124, 140, 255, 0.7);
+    --ff-nav-active-bg: rgba(49, 87, 213, 0.25);
+    --ff-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Sidebar: scrollbar tipis + rapi, hanya di dalam navigasi utama. */
+aside[aria-label="Navigasi utama"] nav {
+    scrollbar-width: thin;
+    scrollbar-color: #3157d5 transparent;
+}
+
+/* Modal: entransi pop halus (transform + opacity saja = GPU, 60fps). */
+@keyframes ffModalPop {
+    from { transform: translate3d(0, 14px, 0) scale(0.98); opacity: 0; }
+    to { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+}
+.ff-modal-pop { animation: ffModalPop 0.32s var(--ff-ease-out) both; will-change: transform, opacity; }
+
+/* Toast: geser masuk dari bawah (transform + opacity saja). */
+@keyframes ffToastIn {
+    from { transform: translate3d(0, 12px, 0); opacity: 0; }
+    to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+.ff-toast-pop { animation: ffToastIn 0.28s var(--ff-ease-out) both; will-change: transform, opacity; }
+
+/* Overlay hadiah event: pop-in + ikon gift goyang agar hadiah mencolok. */
+@keyframes rewardPop {
+    0% { transform: scale(0.82) translateY(18px); opacity: 0; }
+    60% { transform: scale(1.03) translateY(0); opacity: 1; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.reward-pop { animation: rewardPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+@keyframes rewardBounce {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    30% { transform: translateY(-6px) rotate(-6deg); }
+    60% { transform: translateY(0) rotate(4deg); }
+}
+.reward-bounce { animation: rewardBounce 1.4s ease-in-out infinite; }
+
+/* Hormati pengguna yang mematikan animasi — hanya untuk animasi chrome baru. */
+@media (prefers-reduced-motion: reduce) {
+    .ff-modal-pop,
+    .ff-toast-pop,
+    .reward-pop,
+    .reward-bounce { animation: none; }
+    .ff-nav-link { transition: none; }
+}
+
 .slot-ovr-badge.green  { background: linear-gradient(135deg, #35d07f, #1d9e5b); color: #04120a; }
 .slot-ovr-badge.yellow { background: linear-gradient(135deg, #fef0d2, #d4af37); color: #3d2b00; }
 .slot-ovr-badge.red    { background: linear-gradient(135deg, #fca5a5, #b91c1c); color: #fff; }
@@ -250,6 +725,10 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(91,124,25
     transition: all 0.2s ease; border: 1px solid rgba(124,140,255,0.15); background: rgba(15,26,51,0.5);
 }
 .picker-item:hover { background: rgba(49,87,213,0.35); border-color: rgba(124,140,255,0.5); transform: translateX(3px); }
+/* Varian ringkas untuk daftar koleksi (tanpa scroll, pakai pagination). */
+.picker-item.compact { padding: 5px 8px; gap: 8px; border-radius: 8px; }
+.picker-item.compact:hover { transform: none; }
+.picker-item.compact .picker-thumb { width: 28px; height: 28px; font-size: 12px; }
 .picker-thumb {
     width: 36px; height: 36px; border-radius: 50%; background-size: cover; background-position: top center;
     background-color: #0f1a33; border: 2px solid rgba(124,140,255,0.4);
@@ -264,3 +743,1322 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(91,124,25
     cursor: pointer; transition: all 0.25s ease;
 }
 .bench-slot:hover { border-color: #7c8cff; background: rgba(49,87,213,0.3); }
+
+/* ============ FLASHBACK CARD (holografik ungu-biru-pink) ============
+   Komponen terisolasi: resources/jsx/components/FlashbackPlayerCard.jsx.
+   LAYOUT & UKURAN identik PlayerCard reguler (tidak diubah). Yang disamakan
+   dengan referensi hanya WARNA + TEKSTUR: dasar navy-plum gelap dengan
+   tekstur holografik/static hidup (ungu, biru elektrik, cyan, magenta). */
+.flashback-card {
+    --fb-deep: #0B0718;
+    position: relative;
+    width: 100%;
+    border-radius: 24px;
+    overflow: visible;
+    background:
+        linear-gradient(180deg, transparent 28%, rgba(11,7,24,0.85) 100%),
+        repeating-linear-gradient(0deg, rgba(168,85,247,0.10) 0 2px, transparent 2px 6px),
+        repeating-linear-gradient(0deg, rgba(34,211,238,0.07) 0 1px, transparent 1px 9px),
+        repeating-linear-gradient(90deg, rgba(236,72,153,0.05) 0 3px, transparent 3px 13px),
+        radial-gradient(45% 32% at 18% 12%, rgba(168,85,247,0.35), transparent 70%),
+        radial-gradient(40% 30% at 85% 25%, rgba(59,130,246,0.30), transparent 70%),
+        radial-gradient(50% 36% at 60% 88%, rgba(236,72,153,0.22), transparent 70%),
+        radial-gradient(35% 28% at 80% 70%, rgba(34,211,238,0.18), transparent 70%),
+        linear-gradient(90deg, transparent 0 58%, rgba(168,85,247,0.16) 58% 62%, transparent 62% 74%, rgba(34,211,238,0.12) 74% 77%, transparent 77%),
+        linear-gradient(160deg, #171031 0%, #100A24 50%, #0B0718 100%);
+    border: 2px solid rgba(168,85,247,0.65);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.75), 0 0 26px rgba(168,85,247,0.40), 0 0 70px rgba(236,72,153,0.16), inset 0 1px 0 rgba(237,233,254,0.3);
+    color: #F5F7FF;
+    display: flex; flex-direction: column;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.flashback-card.hoverable { cursor: pointer; }
+.flashback-card.hoverable:hover {
+    transform: translateY(-6px) scale(1.01);
+    border-color: #d8b4fe;
+    box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 40px rgba(168,85,247,0.60), 0 0 100px rgba(236,72,153,0.28), inset 0 1px 0 rgba(237,233,254,0.4);
+}
+/* Pergeseran highlight holografik pada FRAME (duplikat border bergeser). */
+.flashback-card::after {
+    content: ''; position: absolute; inset: 0; border-radius: 24px; pointer-events: none;
+    border: 1px solid rgba(236,72,153,0.55);
+    transform: translate(3px, -2px);
+    opacity: 0.8;
+}
+/* Glitch pada FRAME: ungu, biru elektrik, cyan & magenta ala referensi.
+   Foto & info tidak tersentuh. (Hanya opacity yang dianimasikan = murah.) */
+.flashback-card .fb-glitch-line {
+    position: absolute; z-index: 3; pointer-events: none; height: 3px; border-radius: 2px;
+}
+.flashback-card .fb-gl-1 {
+    top: -2px; left: 12%; width: 44%;
+    background: linear-gradient(90deg, rgba(168,85,247,0.0) 0%, rgba(168,85,247,0.95) 22%, rgba(168,85,247,0.0) 50%, rgba(34,211,238,0.9) 72%, rgba(34,211,238,0.0) 100%);
+    box-shadow: 0 0 8px rgba(168,85,247,0.55);
+    animation: fbFlicker 4s ease-in-out infinite;
+}
+.flashback-card .fb-gl-2 {
+    bottom: -2px; right: 10%; width: 38%;
+    background: linear-gradient(90deg, rgba(34,211,238,0.0) 0%, rgba(34,211,238,0.9) 40%, rgba(236,72,153,0.9) 65%, rgba(236,72,153,0.0) 100%);
+    box-shadow: 0 0 8px rgba(236,72,153,0.55);
+    opacity: 0.75;
+    animation: fbFlicker 5.2s ease-in-out 1.3s infinite;
+}
+.flashback-card .fb-gl-3 {
+    top: 30%; left: -2px; width: 3px; height: 44px; border-radius: 2px;
+    background: linear-gradient(180deg, rgba(168,85,247,0.0) 0%, rgba(34,211,238,0.85) 40%, rgba(168,85,247,0.0) 100%);
+    box-shadow: 0 0 8px rgba(34,211,238,0.5);
+    opacity: 0.8;
+}
+@keyframes fbFlicker {
+    0%, 100% { opacity: 0.85; }
+    45% { opacity: 0.85; }
+    50% { opacity: 0.3; }
+    55% { opacity: 0.85; }
+}
+/* Potongan geometris pada bingkai kanan kartu. */
+.flashback-card .fb-slice {
+    position: absolute; z-index: 3; pointer-events: none;
+    top: 52%; right: -2px; width: 7px; height: 40px;
+    background: linear-gradient(180deg, rgba(34,211,238,0.95), rgba(236,72,153,0.35));
+    clip-path: polygon(100% 0, 100% 100%, 0 88%, 0 12%);
+    box-shadow: 0 0 8px rgba(236,72,153,0.5);
+    opacity: 0.9;
+}
+/* Titik piksel glitch pada sudut frame. */
+.flashback-card .fb-tick { position: absolute; z-index: 3; pointer-events: none; width: 8px; height: 8px; }
+.flashback-card .fb-tick-1 {
+    top: 9%; right: -2px;
+    background: #C084FC;
+    box-shadow: 0 0 8px rgba(168,85,247,0.8);
+    animation: fbFlicker 3.6s ease-in-out 0.6s infinite;
+}
+.flashback-card .fb-tick-2 {
+    bottom: 14%; left: -2px;
+    background: #67E8F9;
+    box-shadow: 0 0 8px rgba(34,211,238,0.6);
+    opacity: 0.85;
+}
+/* Struktur dalam (foto, body, footer) memakai utilitas Tailwind
+   yang sama persis dengan PlayerCard reguler — tanpa CSS khusus. */
+@media (prefers-reduced-motion: reduce) {
+    .flashback-card .fb-gl-1, .flashback-card .fb-gl-2, .flashback-card .fb-tick-1 { animation: none; }
+    .flashback-card.hoverable:hover { transform: none; }
+    .ff-card.rank-ucl .ucl-twinkle, .ff-card.rank-ucl::after,
+    .ff-card.rank-uel::after, .ff-card.rank-uecl::after,
+    .ff-card.rank-halloween::after, .ff-card.rank-halloween .hw-bat,
+    .ff-card.rank-halloween .hw-spider, .ff-card.rank-halloween .hw-stars,
+    .ff-card.rank-halloween .hw-pumpkin { animation: none; }
+    .ff-card.rank-ucl.hoverable:hover, .ff-card.rank-uel.hoverable:hover, .ff-card.rank-uecl.hoverable:hover,
+    .ff-card.rank-halloween.hoverable:hover { transform: none; }
+}
+
+/* Badge + lingkaran slot lineup untuk kartu Flashback
+   (holografik ungu-pink, statis tanpa animasi). */
+.rank-badge.flashback {
+    background: linear-gradient(135deg, #7C3AED 0%, #A855F7 45%, #EC4899 100%);
+    color: #F5F7FF; border: 1px solid rgba(216,180,254,0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 0 10px rgba(168,85,247,0.55), inset 0 1px 0 rgba(237,233,254,0.4);
+}
+.slot-circle.rank-flashback { border-color: #C084FC; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 16px rgba(168,85,247,0.70), 0 0 34px rgba(236,72,153,0.30); }
+
+/* ============ UCL CARD (template kartu reguler + kulit starball) ============
+   Layout & ukuran IDENTIK PlayerCard reguler (tidak diubah). Yang membedakan
+   hanya KULIT UCL: dasar navy starball + pola titik bintang + emblem lingkaran
+   bintang + aksen bintang + bingkai cyan + kilau menyapu. */
+.rank-ucl {
+    border: 2px solid rgba(103,232,249,0.85);
+    background:
+        linear-gradient(180deg, transparent 30%, rgba(4,8,30,0.78) 100%),
+        repeating-linear-gradient(115deg, rgba(165,243,252,0.08) 0 3px, transparent 3px 10px),
+        radial-gradient(55% 35% at 50% 0%, rgba(34,211,238,0.22), transparent 70%),
+        radial-gradient(42% 30% at 88% 78%, rgba(124,58,237,0.20), transparent 70%),
+        linear-gradient(135deg, #101d68 0%, #0a1448 50%, #060b30 100%);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.75), 0 0 26px rgba(34,211,238,0.40), 0 0 70px rgba(34,211,238,0.16), inset 0 1px 0 rgba(236,254,255,0.35);
+}
+/* Hover: identitas cyan terjaga, glow menguat. */
+.ff-card.rank-ucl.hoverable:hover { border-color: #d6f9ff; box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 38px rgba(34,211,238,0.60), 0 0 90px rgba(34,211,238,0.25); }
+/* Badan bawah kartu UCL: gradien #0232FF → #00EEFF → #9A00FF + motif bintang.
+   Sengaja dibedakan dari area foto (tanpa garis diagonal). Lapisan scrim navy
+   menjaga teks putih tetap terbaca di atas gradien terang. */
+.ff-card.rank-ucl .ucl-lower {
+    background:
+        radial-gradient(rgba(255,255,255,0.22) 1.1px, transparent 1.5px),
+        linear-gradient(180deg, rgba(3,7,30,0.42) 0%, rgba(3,7,30,0.60) 100%),
+        linear-gradient(120deg, #0232FF 0%, #00EEFF 52%, #9A00FF 100%);
+    background-size: 15px 15px, auto, auto;
+    border-top: 1px solid rgba(165,243,252,0.45);
+    box-shadow: inset 0 1px 12px rgba(34,211,238,0.25);
+}
+.ff-card.rank-ucl .ucl-lower .ucl-star-b {
+    flex-shrink: 0; line-height: 1;
+    color: rgba(255,255,255,0.85); text-shadow: 0 0 8px rgba(255,255,255,0.7);
+}
+.ff-card.rank-ucl .ucl-lower .ucl-b1 { font-size: 14px; animation: uclTwinkle 4.2s ease-in-out infinite; }
+.ff-card.rank-ucl .ucl-lower .ucl-b2 { font-size: 10px; color: rgba(165,243,252,0.9); }
+/* Aksen bintang khas UCL di area foto (dua berkelip halus, satu statis). */
+.ff-card.rank-ucl .ucl-twinkle {
+    position: absolute; z-index: 2; pointer-events: none; line-height: 1;
+    color: rgba(255,255,255,0.55); text-shadow: 0 0 8px rgba(34,211,238,0.8);
+}
+.ff-card.rank-ucl .ucl-t1 { top: 12%; right: 12%; font-size: 15px; animation: uclTwinkle 3.8s ease-in-out infinite; }
+.ff-card.rank-ucl .ucl-t2 { top: 38%; left: 8%; font-size: 11px; color: rgba(165,243,252,0.5); animation: uclTwinkle 5s ease-in-out 1.2s infinite; }
+.ff-card.rank-ucl .ucl-t3 { top: 62%; right: 20%; font-size: 9px; color: rgba(165,243,252,0.45); }
+@keyframes uclTwinkle {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 0.25; }
+}
+/* Emblem starball: lingkaran bintang ala bola UCL di sudut foto. */
+.ff-card.rank-ucl .ucl-ball {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid rgba(165,243,252,0.9);
+    background: radial-gradient(circle at 35% 30%, #1e3a9e, #060b30 78%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 12px rgba(34,211,238,0.55), inset 0 0 8px rgba(34,211,238,0.35);
+    color: #fff; font-size: 11px; line-height: 1; text-shadow: 0 0 6px rgba(34,211,238,0.9);
+}
+/* Kilau menyapu khas tiap rank (dijepit di dalam card, pola sama dengan rank lain). */
+.ff-card.rank-ucl { overflow: hidden; }
+.ff-card.rank-ucl::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 55%;
+    transform: translateX(-180%) skewX(-18deg);
+    pointer-events: none; border-radius: 1.5rem;
+    background: linear-gradient(100deg, transparent 0%, rgba(34,211,238,0.10) 30%, rgba(236,254,255,0.26) 50%, rgba(34,211,238,0.10) 70%, transparent 100%);
+    animation: uclSweep 6s ease-in-out infinite;
+}
+@keyframes uclSweep {
+    0%, 52% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+    67% { opacity: 1; }
+    100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+.ff-card.rank-ucl > * { position: relative; z-index: 1; }
+
+/* Badge + lingkaran slot lineup untuk kartu UCL (navy + cyan). */
+.rank-badge.ucl {
+    background: linear-gradient(135deg, #101d68 0%, #1d4ed8 50%, #0e7490 100%);
+    color: #ecfeff; border: 1px solid rgba(165,243,252,0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 0 10px rgba(34,211,238,0.55), inset 0 1px 0 rgba(236,254,255,0.4);
+}
+.slot-circle.rank-ucl { border-color: #67e8f9; border-width: 3px; background-color: #0a1448; background-image: linear-gradient(135deg, #101d68, #060b30); box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 20px rgba(34,211,238,0.85), 0 0 46px rgba(34,211,238,0.35), inset 0 0 0 2px rgba(236,254,255,0.3); }
+.slot-card-chip.rank-ucl { background: linear-gradient(135deg, #101d68, #0e7490); color: #ecfeff; }
+.slot-card-name.rank-ucl { color: #a5f3fc; border-color: rgba(34,211,238,0.6); background: rgba(6,11,48,0.85); }
+.bench-slot.rank-ucl { border: 2px solid #22d3ee; box-shadow: 0 0 14px rgba(34,211,238,0.5); }
+.bench-card-chip.rank-ucl { background: linear-gradient(135deg, #101d68, #0e7490); color: #ecfeff; }
+.picker-thumb.rank-ucl { border-color: #22d3ee; box-shadow: 0 0 10px rgba(34,211,238,0.55); }
+
+/* ============ UEL CARD (Europa League — hitam pekat + oranye) ============
+   Sesuai referensi: dasar coklat-hitam gelap + garis diagonal oranye
+   bertingkat di kanan atas + horizon glow oranye di badan bawah +
+   bingkai oranye + kilau menyapu oranye. Layout & ukuran IDENTIK UCL. */
+.rank-uel {
+    border: 2px solid rgba(255,138,42,0.9);
+    background:
+        linear-gradient(180deg, transparent 30%, rgba(10,4,0,0.80) 100%),
+        repeating-linear-gradient(115deg, rgba(255,138,42,0.10) 0 3px, transparent 3px 10px),
+        radial-gradient(55% 35% at 50% 0%, rgba(255,106,0,0.25), transparent 70%),
+        radial-gradient(42% 30% at 88% 78%, rgba(255,60,0,0.22), transparent 70%),
+        linear-gradient(135deg, #2a1200 0%, #140800 50%, #070300 100%);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.75), 0 0 26px rgba(255,106,0,0.40), 0 0 70px rgba(255,106,0,0.16), inset 0 1px 0 rgba(255,226,200,0.35);
+}
+.ff-card.rank-uel.hoverable:hover { border-color: #ffd9b0; box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 38px rgba(255,106,0,0.60), 0 0 90px rgba(255,106,0,0.25); }
+/* Garis diagonal bertingkat khas Europa di area foto (CSS murni). */
+.ff-card.rank-uel .uel-lines {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background:
+        repeating-linear-gradient(115deg, transparent 0 14px, rgba(255,106,0,0.55) 14px 17px, transparent 17px 34px),
+        repeating-linear-gradient(115deg, transparent 0 26px, rgba(255,154,60,0.28) 26px 28px, transparent 28px 52px);
+    -webkit-mask-image: linear-gradient(115deg, transparent 30%, #000 75%);
+    mask-image: linear-gradient(115deg, transparent 30%, #000 75%);
+    opacity: 0.85;
+}
+.ff-card.rank-uel .uel-glow-line {
+    position: absolute; left: 8%; right: 8%; bottom: 18%; height: 2px; z-index: 1; pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255,150,50,0.95), transparent);
+    box-shadow: 0 0 14px rgba(255,106,0,0.9), 0 0 40px rgba(255,106,0,0.45);
+}
+/* Badan bawah UEL: dasar gelap + horizon glow oranye + garis diagonal samar. */
+.ff-card.rank-uel .uel-lower {
+    background:
+        radial-gradient(60% 22% at 50% 0%, rgba(255,140,40,0.55), transparent 70%),
+        repeating-linear-gradient(115deg, rgba(255,170,90,0.10) 0 2px, transparent 2px 12px),
+        linear-gradient(180deg, rgba(8,3,0,0.55) 0%, rgba(8,3,0,0.78) 100%),
+        linear-gradient(120deg, #3a1a00 0%, #8a2e00 52%, #1c0d00 100%);
+    border-top: 1px solid rgba(255,170,90,0.5);
+    box-shadow: inset 0 1px 12px rgba(255,106,0,0.30);
+}
+.ff-card.rank-uel .uel-lower .uel-star-b {
+    flex-shrink: 0; line-height: 1;
+    color: rgba(255,200,150,0.9); text-shadow: 0 0 8px rgba(255,106,0,0.8);
+}
+.ff-card.rank-uel .uel-lower .uel-b1 { font-size: 13px; }
+.ff-card.rank-uel .uel-lower .uel-b2 { font-size: 10px; color: rgba(255,180,120,0.9); }
+/* Emblem Europa: belah ketupat oranye di sudut foto. */
+.ff-card.rank-uel .uel-ball {
+    width: 34px; height: 34px; border-radius: 9px;
+    transform: rotate(45deg);
+    border: 2px solid rgba(255,180,120,0.95);
+    background: radial-gradient(circle at 35% 30%, #7a2c00, #140800 78%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 12px rgba(255,106,0,0.6), inset 0 0 8px rgba(255,106,0,0.4);
+    color: #ffd9b0; font-size: 12px; line-height: 1;
+}
+.ff-card.rank-uel .uel-ball > * { transform: rotate(-45deg); }
+.ff-card.rank-uel { overflow: hidden; }
+.ff-card.rank-uel::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 55%;
+    transform: translateX(-180%) skewX(-18deg);
+    pointer-events: none; border-radius: 1.5rem;
+    background: linear-gradient(100deg, transparent 0%, rgba(255,106,0,0.10) 30%, rgba(255,240,225,0.26) 50%, rgba(255,106,0,0.10) 70%, transparent 100%);
+    animation: uelSweep 6.5s ease-in-out infinite;
+}
+@keyframes uelSweep {
+    0%, 52% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+    67% { opacity: 1; }
+    100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+.ff-card.rank-uel > * { position: relative; z-index: 1; }
+
+/* Badge + lingkaran slot lineup untuk kartu UEL (hitam + oranye). */
+.rank-badge.uel {
+    background: linear-gradient(135deg, #2a1200 0%, #c2410c 50%, #7c2d12 100%);
+    color: #fff7ed; border: 1px solid rgba(255,180,120,0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 0 10px rgba(255,106,0,0.55), inset 0 1px 0 rgba(255,237,213,0.4);
+}
+.slot-circle.rank-uel { border-color: #fb923c; border-width: 3px; background-color: #1c0d00; background-image: linear-gradient(135deg, #3a1a00, #070300); box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 20px rgba(255,106,0,0.85), 0 0 46px rgba(255,106,0,0.35), inset 0 0 0 2px rgba(255,237,213,0.3); }
+.slot-card-chip.rank-uel { background: linear-gradient(135deg, #7c2d12, #ea580c); color: #fff7ed; }
+.slot-card-name.rank-uel { color: #fdba74; border-color: rgba(255,106,0,0.6); background: rgba(20,8,0,0.85); }
+.bench-slot.rank-uel { border: 2px solid #fb923c; box-shadow: 0 0 14px rgba(255,106,0,0.5); }
+.bench-card-chip.rank-uel { background: linear-gradient(135deg, #7c2d12, #ea580c); color: #fff7ed; }
+.picker-thumb.rank-uel { border-color: #fb923c; box-shadow: 0 0 10px rgba(255,106,0,0.55); }
+
+/* ============ UECL CARD (Conference League — dibedakan signifikan dari POTW) ============
+   POTW = hijau terang datar (#59C749). UECL = dasar HITAM-hijau pekat +
+   gelombang garis neon mint melengkung + strip garis horizontal bawah +
+   bingkai neon ganda + emblem gelombang + kilau menyapu mint.
+   Layout & ukuran IDENTIK UCL. */
+.rank-uecl {
+    border: 2px solid rgba(0,255,163,0.85);
+    background:
+        linear-gradient(180deg, transparent 30%, rgba(1,12,7,0.82) 100%),
+        repeating-radial-gradient(120% 90% at 85% 20%, transparent 0 10px, rgba(0,255,163,0.07) 10px 12px),
+        radial-gradient(55% 35% at 50% 0%, rgba(0,255,163,0.20), transparent 70%),
+        radial-gradient(42% 30% at 12% 82%, rgba(0,120,80,0.30), transparent 70%),
+        linear-gradient(135deg, #02120a 0%, #03170c 50%, #010b06 100%);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.75), 0 0 26px rgba(0,255,163,0.35), 0 0 70px rgba(0,255,163,0.14), inset 0 1px 0 rgba(209,255,232,0.35);
+}
+.ff-card.rank-uecl.hoverable:hover { border-color: #d1ffe8; box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 38px rgba(0,255,163,0.55), 0 0 90px rgba(0,255,163,0.22); }
+/* Gelombang Conference DI BINGKAI kartu: garis neon mengelilingi pinggiran/
+   frame kartu (bukan di atas foto pemain) → nuansa efek keluar dari card.
+   Trik: elemen full-card + mask "ring" (border-box XOR content-box) sehingga
+   pola garis hanya tampak pada band bingkai dan tidak menutupi konten/badge. */
+.ff-card.rank-uecl .uecl-waves {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    border-radius: inherit; padding: 8px;
+    background:
+        repeating-radial-gradient(125% 95% at 100% 0%, transparent 0 10px, rgba(0,255,163,0.85) 10px 12px, transparent 12px 24px),
+        repeating-radial-gradient(110% 85% at 0% 100%, transparent 0 14px, rgba(124,255,178,0.55) 14px 16px, transparent 16px 32px);
+    -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    -webkit-mask-clip: content-box, border-box;
+    -webkit-mask-composite: xor;
+    mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    mask-clip: content-box, border-box;
+    mask-composite: exclude;
+    opacity: 0.95;
+}
+.ff-card.rank-uecl .uecl-stripes {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    border-radius: inherit; padding: 8px;
+    background: repeating-linear-gradient(90deg, rgba(0,255,163,0.45) 0 2px, transparent 2px 8px);
+    -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    -webkit-mask-clip: content-box, border-box;
+    -webkit-mask-composite: xor;
+    mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    mask-clip: content-box, border-box;
+    mask-composite: exclude;
+    opacity: 0.55;
+}
+.ff-card.rank-uecl .uecl-notch {
+    position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    z-index: 2; pointer-events: none; font-size: 10px; line-height: 1;
+    color: rgba(209,255,232,0.9); text-shadow: 0 0 8px rgba(0,255,163,0.9);
+}
+/* Badan bawah UECL: gelap + gelombang mint + garis atas neon ganda. */
+.ff-card.rank-uecl .uecl-lower {
+    background:
+        repeating-radial-gradient(140% 120% at 85% 0%, transparent 0 14px, rgba(0,255,163,0.12) 14px 16px, transparent 16px 30px),
+        linear-gradient(180deg, rgba(1,12,7,0.50) 0%, rgba(1,12,7,0.72) 100%),
+        linear-gradient(120deg, #02120a 0%, #064e2b 52%, #010b06 100%);
+    border-top: 2px solid rgba(0,255,163,0.55);
+    box-shadow: inset 0 1px 0 rgba(209,255,232,0.35), inset 0 1px 12px rgba(0,255,163,0.25);
+}
+.ff-card.rank-uecl .uecl-lower .uecl-star-b {
+    flex-shrink: 0; line-height: 1;
+    color: rgba(209,255,232,0.9); text-shadow: 0 0 8px rgba(0,255,163,0.8);
+}
+.ff-card.rank-uecl .uecl-lower .uecl-b1 { font-size: 16px; }
+.ff-card.rank-uecl .uecl-lower .uecl-b2 { font-size: 12px; color: rgba(124,255,178,0.9); }
+/* Emblem Conference: lingkaran gelombang (bukan bintang/bintang POTW). */
+.ff-card.rank-uecl .uecl-ball {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid rgba(0,255,163,0.9);
+    outline: 1px solid rgba(0,255,163,0.4); outline-offset: 2px;
+    background: radial-gradient(circle at 35% 30%, #064e2b, #010b06 78%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 12px rgba(0,255,163,0.55), inset 0 0 8px rgba(0,255,163,0.35);
+    color: #d1ffe8; font-size: 16px; line-height: 1; text-shadow: 0 0 6px rgba(0,255,163,0.9);
+}
+.ff-card.rank-uecl { overflow: hidden; }
+.ff-card.rank-uecl::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 55%;
+    transform: translateX(-180%) skewX(-18deg);
+    pointer-events: none; border-radius: 1.5rem;
+    background: linear-gradient(100deg, transparent 0%, rgba(0,255,163,0.10) 30%, rgba(209,255,232,0.26) 50%, rgba(0,255,163,0.10) 70%, transparent 100%);
+    animation: ueclSweep 7s ease-in-out infinite;
+}
+@keyframes ueclSweep {
+    0%, 52% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+    67% { opacity: 1; }
+    100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+.ff-card.rank-uecl > * { position: relative; z-index: 1; }
+
+/* Badge + lingkaran slot lineup untuk kartu UECL (hitam-hijau neon, beda POTW). */
+.rank-badge.uecl {
+    background: linear-gradient(135deg, #02120a 0%, #059669 50%, #022c1c 100%);
+    color: #d1ffe8; border: 1px solid rgba(0,255,163,0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 0 10px rgba(0,255,163,0.55), inset 0 1px 0 rgba(209,255,232,0.4);
+}
+.slot-circle.rank-uecl { border-color: #00ffa3; border-width: 3px; background-color: #02120a; background-image: linear-gradient(135deg, #064e2b, #010b06); box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 20px rgba(0,255,163,0.85), 0 0 46px rgba(0,255,163,0.35), inset 0 0 0 2px rgba(209,255,232,0.3); }
+.slot-card-chip.rank-uecl { background: linear-gradient(135deg, #022c1c, #10b981); color: #d1ffe8; }
+.slot-card-name.rank-uecl { color: #7cffb2; border-color: rgba(0,255,163,0.6); background: rgba(1,12,7,0.85); }
+.bench-slot.rank-uecl { border: 2px solid #00ffa3; box-shadow: 0 0 14px rgba(0,255,163,0.5); }
+.bench-card-chip.rank-uecl { background: linear-gradient(135deg, #022c1c, #10b981); color: #d1ffe8; }
+.picker-thumb.rank-uecl { border-color: #00ffa3; box-shadow: 0 0 10px rgba(0,255,163,0.55); }
+
+/* ============ HALLOWEEN CARD (skin event — ungu malam + hijau racun) ============
+   Sengaja DIBEDAKAN dari UEL: UEL = coklat-hitam + garis diagonal & horizon
+   oranye. Halloween = hitam-ungu pekat + kabut hijau racun, bintang, sarang
+   laba-laba (kiri atas & kanan bawah), kelelawar, laba-laba menggantung,
+   serta emblem tiga labu. Badan bawah diberi tekstur (tetes lendir, bintang,
+   sarang laba-laba samar, dan watermark hantu) agar tidak polos. TANPA garis
+   diagonal/horizon oranye. Struktur & ukuran tetap identik kartu reguler;
+   semua ornamen absolute/pointer-events none. */
+.rank-halloween {
+    border: 2px solid rgba(167,139,250,0.90);
+    background:
+        linear-gradient(180deg, transparent 30%, rgba(6,2,12,0.85) 100%),
+        radial-gradient(58% 36% at 50% 0%, rgba(124,58,237,0.30), transparent 70%),
+        radial-gradient(46% 32% at 88% 82%, rgba(74,222,128,0.16), transparent 70%),
+        radial-gradient(40% 30% at 10% 70%, rgba(88,28,135,0.28), transparent 70%),
+        linear-gradient(135deg, #1a0b2e 0%, #120722 52%, #07030f 100%);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.80), 0 0 28px rgba(124,58,237,0.38), 0 0 70px rgba(74,222,128,0.14), inset 0 1px 0 rgba(221,214,254,0.30);
+}
+/* Hover: identitas ungu-hijau terjaga, glow menguat tipis. */
+.ff-card.rank-halloween.hoverable:hover { border-color: #d9f99d; box-shadow: 0 22px 45px -15px rgba(0,0,0,0.8), 0 0 38px rgba(124,58,237,0.55), 0 0 90px rgba(74,222,128,0.22); }
+/* Foto menyatu dengan dasar ungu malam (bukan navy reguler / coklat UEL). */
+.ff-card.rank-halloween .pc-fade {
+    background: linear-gradient(0deg, rgba(12,5,24,0.95) 0%, rgba(12,5,24,0.22) 42%, rgba(0,0,0,0.32) 100%);
+}
+/* Badan bawah: kabut hijau racun + tekstur bintang + watermark web/hantu. */
+.ff-card.rank-halloween .hw-lower {
+    position: relative; overflow: hidden;
+    background:
+        radial-gradient(62% 24% at 50% 0%, rgba(74,222,128,0.30), transparent 72%),
+        radial-gradient(52% 32% at 86% 100%, rgba(124,58,237,0.34), transparent 75%),
+        radial-gradient(1.2px 1.2px at 12% 32%, rgba(221,214,254,0.60) 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 44% 70%, rgba(167,243,208,0.55) 50%, transparent 51%),
+        radial-gradient(1px 1px at 72% 38%, rgba(237,233,254,0.55) 50%, transparent 51%),
+        radial-gradient(1px 1px at 88% 64%, rgba(167,243,208,0.50) 50%, transparent 51%),
+        linear-gradient(180deg, rgba(8,3,14,0.55) 0%, rgba(8,3,14,0.80) 100%),
+        linear-gradient(120deg, #1b0b30 0%, #2a1145 45%, #0a1a12 100%);
+    border-top: 1px solid rgba(134,239,172,0.45);
+    box-shadow: inset 0 1px 0 rgba(134,239,172,0.30), inset 0 1px 14px rgba(74,222,128,0.18);
+}
+/* Tetes lendir hijau di tepi atas badan bawah (scallop, bukan garis lurus polos). */
+.ff-card.rank-halloween .hw-lower::before {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: 16px;
+    pointer-events: none; opacity: 0.55;
+    background-image: radial-gradient(circle at 9px 0, rgba(134,239,172,0.42) 0 7px, transparent 8px);
+    background-size: 18px 16px;
+}
+/* Sarang laba-laba samar di sudut kanan bawah badan bawah (di belakang teks). */
+.ff-card.rank-halloween .hw-lower::after {
+    content: ''; position: absolute; right: -20px; bottom: -20px; width: 128px; height: 128px;
+    pointer-events: none; opacity: 0.55;
+    background:
+        repeating-radial-gradient(circle at 100% 100%, transparent 0 13px, rgba(190,242,100,0.16) 13px 14px),
+        repeating-conic-gradient(from 180deg at 100% 100%, rgba(167,139,250,0.16) 0 1.2deg, transparent 1.2deg 26deg);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, #000 0 62%, transparent 74%);
+    mask-image: radial-gradient(circle at 100% 100%, #000 0 62%, transparent 74%);
+}
+/* Konten badan bawah di atas ornamen dekoratif. */
+.ff-card.rank-halloween .hw-lower > * { position: relative; z-index: 1; }
+/* Web watermark kiri-bawah + hantu samar di badan bawah. */
+.ff-card.rank-halloween .hw-lower-web {
+    position: absolute; left: -14px; bottom: -14px; width: 92px; height: 92px;
+    z-index: 0; pointer-events: none; color: rgba(167,243,208,0.5); opacity: 0.35;
+}
+.ff-card.rank-halloween .hw-lower-web svg { width: 100%; height: 100%; }
+.ff-card.rank-halloween .hw-lower-ghost {
+    position: absolute; right: 10%; top: 46%; z-index: 0; pointer-events: none;
+    font-size: 54px; line-height: 1; color: rgba(190,242,100,0.10);
+    transform: rotate(-8deg);
+}
+/* Bintang kecil bertaburan di area foto (berkedip halus). */
+.ff-card.rank-halloween .hw-stars {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.8;
+    background-image:
+        radial-gradient(1.4px 1.4px at 14% 18%, rgba(237,233,254,0.95) 50%, transparent 51%),
+        radial-gradient(1px 1px at 78% 12%, rgba(167,243,208,0.90) 50%, transparent 51%),
+        radial-gradient(1px 1px at 40% 32%, rgba(237,233,254,0.80) 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 90% 44%, rgba(196,181,253,0.85) 50%, transparent 51%),
+        radial-gradient(1px 1px at 24% 58%, rgba(167,243,208,0.75) 50%, transparent 51%),
+        radial-gradient(1px 1px at 64% 72%, rgba(237,233,254,0.70) 50%, transparent 51%);
+    animation: hwTwinkle 5s ease-in-out infinite;
+}
+@keyframes hwTwinkle {
+    0%, 100% { opacity: 0.50; }
+    50% { opacity: 0.92; }
+}
+/* Sarang laba-laba di sudut kiri atas & kanan bawah (di belakang badge/emblem). */
+.ff-card.rank-halloween .hw-web {
+    position: absolute; width: 88px; height: 88px;
+    pointer-events: none; opacity: 0.40;
+}
+.ff-card.rank-halloween .hw-web svg { width: 100%; height: 100%; }
+.ff-card.rank-halloween .hw-web-tl {
+    top: -10px; left: -10px; color: rgba(190,242,100,0.6);
+}
+.ff-card.rank-halloween .hw-web-tl svg { transform: scale(-1, -1); }
+.ff-card.rank-halloween .hw-web-br {
+    right: -10px; bottom: -10px; color: rgba(196,181,253,0.55);
+}
+/* Kelelawar halus di area foto; hanya dekorasi, tidak menutupi badge. */
+.ff-card.rank-halloween .hw-bats {
+    position: absolute; inset: 0; pointer-events: none;
+    color: rgba(237,233,254,0.72);
+}
+.ff-card.rank-halloween .hw-bat {
+    position: absolute; fill: currentColor; opacity: 0.70;
+    filter: drop-shadow(0 0 4px rgba(168,85,247,0.50));
+    animation: hwBatFloat 9s ease-in-out infinite;
+}
+.ff-card.rank-halloween .hw-bat-1 { top: 16%; right: 14%; width: 16px; height: 13px; animation-delay: -1.5s; }
+.ff-card.rank-halloween .hw-bat-2 { top: 40%; left: 10%; width: 11px; height: 9px; opacity: 0.45; animation-delay: -4s; }
+.ff-card.rank-halloween .hw-bat-3 { top: 54%; right: 9%; width: 9px; height: 7px; opacity: 0.35; animation-delay: -7s; }
+@keyframes hwBatFloat {
+    0%, 100% { transform: translate3d(0, 0, 0) rotate(-4deg); }
+    50% { transform: translate3d(2px, -3px, 0) rotate(4deg); }
+}
+/* Laba-laba menggantung dari tepi atas foto, berayun pelan. */
+.ff-card.rank-halloween .hw-spider {
+    position: absolute; top: 0; left: 68%; width: 24px; height: 44px;
+    pointer-events: none; color: rgba(203,196,225,0.85);
+    transform-origin: 50% 0;
+    filter: drop-shadow(0 0 4px rgba(74,222,128,0.45));
+    animation: hwSpiderSwing 6s ease-in-out infinite;
+}
+.ff-card.rank-halloween .hw-spider svg { width: 100%; height: 100%; }
+@keyframes hwSpiderSwing {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+}
+/* Kabut hijau racun di kaki foto. */
+.ff-card.rank-halloween .hw-fog {
+    position: absolute; left: -12%; right: -12%; bottom: -8%; height: 46%;
+    pointer-events: none; filter: blur(6px);
+    background:
+        radial-gradient(50% 80% at 18% 100%, rgba(74,222,128,0.32), transparent 70%),
+        radial-gradient(45% 80% at 58% 100%, rgba(168,85,247,0.34), transparent 72%),
+        radial-gradient(40% 70% at 88% 100%, rgba(74,222,128,0.22), transparent 70%);
+}
+/* Emblem satu labu menyeramkan — mata menyala hijau, mulut bergerigi. */
+.ff-card.rank-halloween .hw-pumpkin {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 2px solid rgba(163,230,53,0.85);
+    background: radial-gradient(circle at 40% 32%, #2a1038, #0a0412 78%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 14px rgba(74,222,128,0.55), 0 0 26px rgba(249,115,22,0.28), inset 0 0 10px rgba(124,58,237,0.50);
+    animation: hwPumpkinGlow 3.6s ease-in-out infinite;
+}
+.ff-card.rank-halloween .hw-pumpkin svg {
+    width: 32px; height: 32px;
+    filter: drop-shadow(0 0 3px rgba(163,230,53,0.70)) drop-shadow(0 0 6px rgba(249,115,22,0.35));
+}
+@keyframes hwPumpkinGlow {
+    0%, 100% { box-shadow: 0 0 12px rgba(74,222,128,0.45), 0 0 22px rgba(249,115,22,0.20), inset 0 0 10px rgba(124,58,237,0.45); }
+    50% { box-shadow: 0 0 18px rgba(163,230,53,0.75), 0 0 34px rgba(249,115,22,0.35), inset 0 0 12px rgba(124,58,237,0.60); }
+}
+/* Bingkai dalam tipis: mempertahankan kesan premium tanpa mengubah layout. */
+.ff-card.rank-halloween::before {
+    content: ''; position: absolute; inset: 6px; border-radius: 1.1rem; pointer-events: none;
+    border: 1px solid rgba(167,139,250,0.24);
+    box-shadow: inset 0 0 18px rgba(74,222,128,0.14);
+}
+/* Kilau menyapu ungu-hijau, dijepit di dalam card. */
+.ff-card.rank-halloween { overflow: hidden; }
+.ff-card.rank-halloween::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 55%;
+    transform: translateX(-180%) skewX(-18deg);
+    pointer-events: none; border-radius: 1.5rem;
+    background: linear-gradient(100deg, transparent 0%, rgba(168,85,247,0.14) 30%, rgba(221,255,229,0.24) 50%, rgba(74,222,128,0.14) 70%, transparent 100%);
+    animation: hwSweep 7s ease-in-out infinite;
+}
+@keyframes hwSweep {
+    0%, 52% { transform: translateX(-180%) skewX(-18deg); opacity: 0; }
+    67% { opacity: 1; }
+    100% { transform: translateX(320%) skewX(-18deg); opacity: 0; }
+}
+.ff-card.rank-halloween > * { position: relative; z-index: 1; }
+
+/* Badge + lingkaran slot lineup untuk kartu Halloween (ungu + hijau racun). */
+.rank-badge.halloween {
+    background: linear-gradient(135deg, #3b1454 0%, #4d7c0f 55%, #166534 100%);
+    color: #f7fee7; border: 1px solid rgba(190,242,100,0.90);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 0 10px rgba(124,58,237,0.55), inset 0 1px 0 rgba(236,252,203,0.40);
+}
+.slot-circle.rank-halloween { border-color: #a3e635; border-width: 3px; background-color: #140a24; background-image: linear-gradient(135deg, #2a1038, #0a0412); box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 20px rgba(124,58,237,0.85), 0 0 46px rgba(74,222,128,0.32), inset 0 0 0 2px rgba(236,252,203,0.28); }
+.slot-card-chip.rank-halloween { background: linear-gradient(135deg, #3b1454, #4d7c0f); color: #f7fee7; }
+.slot-card-name.rank-halloween { color: #bef264; border-color: rgba(163,230,53,0.55); background: rgba(20,10,36,0.85); }
+.bench-slot.rank-halloween { border: 2px solid #a3e635; box-shadow: 0 0 14px rgba(124,58,237,0.5); }
+.bench-card-chip.rank-halloween { background: linear-gradient(135deg, #3b1454, #4d7c0f); color: #f7fee7; }
+.picker-thumb.rank-halloween { border-color: #a3e635; box-shadow: 0 0 10px rgba(124,58,237,0.55); }
+
+/* Kulit kartu UCL/UEL/UECL/Halloween memakai shorthand `background` yang datang setelah
+   .picker-thumb, sehingga me-reset background-size/position dan membuat foto
+   koleksi/bench tampil hitam. Paksa thumbnail tetap cover setelah semua kulit. */
+.picker-thumb.rank-ucl,
+.picker-thumb.rank-uel,
+.picker-thumb.rank-uecl,
+.picker-thumb.rank-halloween {
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
+}
+
+.slot-circle.rank-potw { border-color: #59C749; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 16px rgba(89,199,73,0.65), 0 0 34px rgba(89,199,73,0.28); }
+
+/* ============ IDENTITAS CARD DI LINEUP (diperkuat) ============
+   Lingkaran slot + bench + picker memakai warna kartu yang sama dengan
+   PlayerCard (bronze/silver/gold/diamond/legend/potw/flashback) agar user
+   langsung membedakan kartu sekilas. Hanya warna/border/glow — tidak
+   mengubah layout, ukuran, atau posisi badge OVR/penalti yang ada. */
+
+/* Badge posisi alternatif mini (kartu, modal, lineup picker). */
+.pos-alt-mini {
+    display: inline-flex; align-items: center;
+    padding: 0 6px; border-radius: 6px;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px dashed rgba(110, 231, 183, 0.55);
+    color: #a7f3d0;
+}
+
+/* Lingkaran slot: fondo kartu + border tebal per tier. Foto tetap di atas
+   (background-image inline), gradien kartu terlihat sebagai ring + tint. */
+.slot-circle.rank-bronze { border-color: #e8a866; border-width: 3px; background-color: #5f3c1b; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 10px rgba(205,127,50,0.55), inset 0 0 0 2px rgba(255,220,180,0.25); }
+.slot-circle.rank-silver { border-color: #ffffff; border-width: 3px; background-color: #7d848e; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 14px rgba(230,234,239,0.65), inset 0 0 0 2px rgba(255,255,255,0.45); }
+.slot-circle.rank-gold { border-color: #ffe27a; border-width: 3px; background-color: #7a5c12; background-image: linear-gradient(135deg, #7a5c12, #a97f1f); box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 20px rgba(212,175,55,0.85), 0 0 44px rgba(212,175,55,0.35), inset 0 0 0 2px rgba(255,243,176,0.5); }
+.slot-circle.rank-diamond { border-color: #d8b4fe; border-width: 3px; background-color: #24102e; background-image: linear-gradient(135deg, #3b1a45, #120818); box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 22px rgba(139,92,246,0.95), 0 0 52px rgba(139,92,246,0.45), inset 0 0 0 2px rgba(237,233,254,0.35); }
+.slot-circle.rank-legend { border-color: #f3df9f; border-width: 4px; background-color: #dccb9e; background-image: linear-gradient(135deg, #f7eed4, #dccb9e); color: #3a2a06; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 22px rgba(217,185,106,0.95), 0 0 52px rgba(217,185,106,0.45), inset 0 0 0 2px rgba(255,250,230,0.7); }
+.slot-circle.rank-potw { border-color: #59C749; border-width: 3px; background-color: #0a2410; background-image: linear-gradient(135deg, #123a17, #041007); box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 20px rgba(89,199,73,0.9), 0 0 46px rgba(89,199,73,0.4), inset 0 0 0 2px rgba(214,255,201,0.4); }
+.slot-circle.rank-flashback { border-color: #C084FC; border-width: 3px; background-color: #100A24; background-image: linear-gradient(135deg, #171031, #0B0718); box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 20px rgba(168,85,247,0.9), 0 0 46px rgba(236,72,153,0.4), inset 0 0 0 2px rgba(216,180,254,0.4); }
+
+/* Ikon kartu di sudut kiri-atas lingkaran (cerminan RankBadge). */
+.slot-card-chip {
+    position: absolute; top: -6px; left: -6px; width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; z-index: 7; border: 2px solid rgba(0,0,0,0.45);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+}
+.slot-card-chip.rank-bronze { background: linear-gradient(135deg, #d89a5b, #5f3a1c); color: #ffe9cf; }
+.slot-card-chip.rank-silver { background: linear-gradient(135deg, #ffffff, #9aa1ab); color: #232a33; }
+.slot-card-chip.rank-gold { background: linear-gradient(135deg, #fff3b0, #b8860b); color: #3a2800; }
+.slot-card-chip.rank-diamond { background: linear-gradient(135deg, #6d28d9, #1e0a3c); color: #f1e9ff; }
+.slot-card-chip.rank-legend { background: linear-gradient(135deg, #fdf6dd, #b89b58); color: #3d2c07; }
+.slot-card-chip.rank-potw { background: linear-gradient(135deg, #a5f09a, #1e6b15); color: #06130a; }
+.slot-card-chip.rank-flashback { background: linear-gradient(135deg, #7C3AED, #EC4899); color: #F5F7FF; }
+
+/* Nama kartu di bawah label slot (sangat kecil, berwarna sesuai kartu). */
+.slot-card-name {
+    position: absolute; top: calc(100% + 17px); left: 50%; transform: translateX(-50%);
+    font-size: 8px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
+    padding: 0 6px; border-radius: 999px; white-space: nowrap;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+    border: 1px solid transparent;
+}
+.slot-card-name.rank-bronze { color: #f0b978; border-color: rgba(205,127,50,0.5); background: rgba(20,10,4,0.75); }
+.slot-card-name.rank-silver { color: #eef1f5; border-color: rgba(200,210,222,0.5); background: rgba(10,12,16,0.75); }
+.slot-card-name.rank-gold { color: #ffe27a; border-color: rgba(212,175,55,0.6); background: rgba(22,13,2,0.78); }
+.slot-card-name.rank-diamond { color: #d8b4fe; border-color: rgba(139,92,246,0.6); background: rgba(14,6,24,0.8); }
+.slot-card-name.rank-legend { color: #3a2a06; border-color: rgba(184,144,58,0.7); background: linear-gradient(135deg, #fdf6dd, #ecd9a0); text-shadow: none; }
+.slot-card-name.rank-potw { color: #a5f09a; border-color: rgba(89,199,73,0.6); background: rgba(3,10,4,0.8); }
+.slot-card-name.rank-flashback { color: #e9d5ff; border-color: rgba(168,85,247,0.6); background: rgba(11,7,24,0.85); }
+
+/* Lencana natural (posisi alternatif) di sudut kanan-bawah lingkaran. */
+.slot-natural {
+    position: absolute; bottom: -4px; right: -4px; width: 20px; height: 20px; border-radius: 50%;
+    background: linear-gradient(135deg, #35d07f, #1d9e5b); color: #04120a; font-size: 9px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5); z-index: 7; border: 2px solid rgba(0,0,0,0.4);
+}
+
+/* Bench: bingkai berwarna kartu + chip nama kartu. */
+.bench-slot.rank-bronze { border: 2px solid rgba(205,127,50,0.8); box-shadow: 0 0 10px rgba(205,127,50,0.25); }
+.bench-slot.rank-silver { border: 2px solid rgba(230,234,239,0.8); box-shadow: 0 0 10px rgba(200,210,222,0.3); }
+.bench-slot.rank-gold { border: 2px solid #f0cd56; box-shadow: 0 0 14px rgba(212,175,55,0.45); }
+.bench-slot.rank-diamond { border: 2px solid #a78bfa; box-shadow: 0 0 16px rgba(139,92,246,0.55); }
+.bench-slot.rank-legend { border: 3px solid #ecd9a0; box-shadow: 0 0 16px rgba(217,185,106,0.55); }
+.bench-slot.rank-potw { border: 2px solid #59C749; box-shadow: 0 0 14px rgba(89,199,73,0.5); }
+.bench-slot.rank-flashback { border: 2px solid #a855f7; box-shadow: 0 0 14px rgba(168,85,247,0.55); }
+.bench-card-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 8px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;
+    padding: 1px 7px; border-radius: 999px; white-space: nowrap;
+}
+.bench-card-chip.rank-bronze { background: linear-gradient(135deg, #d89a5b, #5f3a1c); color: #ffe9cf; }
+.bench-card-chip.rank-silver { background: linear-gradient(135deg, #ffffff, #9aa1ab); color: #232a33; }
+.bench-card-chip.rank-gold { background: linear-gradient(135deg, #fff3b0, #b8860b); color: #3a2800; }
+.bench-card-chip.rank-diamond { background: linear-gradient(135deg, #6d28d9, #1e0a3c); color: #f1e9ff; }
+.bench-card-chip.rank-legend { background: linear-gradient(135deg, #fdf6dd, #b89b58); color: #3d2c07; }
+.bench-card-chip.rank-potw { background: linear-gradient(135deg, #a5f09a, #1e6b15); color: #06130a; }
+.bench-card-chip.rank-flashback { background: linear-gradient(135deg, #7C3AED, #EC4899); color: #F5F7FF; }
+
+/* Picker/daftar koleksi: thumb berbingkai kartu. */
+.picker-thumb.rank-bronze { border-color: #cd7f32; box-shadow: 0 0 8px rgba(205,127,50,0.4); }
+.picker-thumb.rank-silver { border-color: #e6eaef; box-shadow: 0 0 8px rgba(200,210,222,0.4); }
+.picker-thumb.rank-gold { border-color: #f0cd56; box-shadow: 0 0 10px rgba(212,175,55,0.55); }
+.picker-thumb.rank-diamond { border-color: #a78bfa; box-shadow: 0 0 10px rgba(139,92,246,0.6); }
+.picker-thumb.rank-legend { border-color: #ecd9a0; border-width: 3px; box-shadow: 0 0 10px rgba(217,185,106,0.6); }
+.picker-thumb.rank-potw { border-color: #59C749; box-shadow: 0 0 10px rgba(89,199,73,0.55); }
+.picker-thumb.rank-flashback { border-color: #a855f7; box-shadow: 0 0 10px rgba(168,85,247,0.6); }
+
+/* ============ MODERN COLLAPSIBLE SIDEBAR (terisolasi, hanya sidebar) ============
+   Sistem animasi terkoordinasi: lebar 300ms, label 180-250ms,
+   opacity 150-250ms, easing cubic-bezier(0.22, 1, 0.36, 1).
+   Mode collapsed (.side-mini) hanya aktif di desktop (min-width:1024px);
+   di mobile sidebar selalu menjadi drawer penuh. */
+/* Label & info profil: muncul/hilang halus via max-width + opacity + geser. */
+.ff-side-label,
+.ff-side-fade {
+    max-width: 12rem;
+    overflow: hidden;
+    transition:
+        max-width 220ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 180ms ease,
+        transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ff-side-heading {
+    max-height: 2rem;
+    transition:
+        max-height 250ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 180ms ease,
+        padding 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Tooltip: tersembunyi secara default (juga saat expanded), fade + geser kecil. */
+.ff-tip {
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%) translateX(-6px);
+    white-space: nowrap;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #f5f7ff;
+    background: rgba(10, 17, 38, 0.96);
+    border: 1px solid rgba(124, 140, 255, 0.35);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+    transition: opacity 180ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Overlay drawer mobile: fade-in halus. */
+.ff-side-overlay { animation: ffSideFade 250ms ease both; }
+@keyframes ffSideFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+/* Badge mail versi titik (dipakai saat collapsed, menempel ikon). */
+.ff-mail-dot {
+    position: static;
+}
+@media (min-width: 1024px) {
+    /* Mode collapsed: item & profil rata tengah, label menghilang. */
+    .side-mini .ff-side-item,
+    .side-mini .ff-side-profile { justify-content: center; gap: 0; padding-left: 0.5rem; padding-right: 0.5rem; }
+    .side-mini .ff-side-bar { display: none; }
+    .side-mini .ff-side-label,
+    .side-mini .ff-side-fade {
+        max-width: 0;
+        opacity: 0;
+        transform: translateX(-8px);
+    }
+    .side-mini .ff-side-heading {
+        max-height: 0;
+        opacity: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    /* Badge inline disembunyikan, diganti titik pada ikon. */
+    .side-mini .ff-mail-badge { display: none; }
+    .side-mini .ff-mail-dot {
+        display: inline-flex;
+        position: absolute;
+        top: -6px;
+        right: -6px;
+    }
+    /* Tooltip aktif hanya saat collapsed + hover, dengan jeda 350ms
+       agar tidak muncul saat kursor sekadar lewat. */
+    .side-mini .ff-side-item:hover .ff-tip,
+    .side-mini .ff-side-profile:hover .ff-tip {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+        transition-delay: 350ms;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ff-side-label,
+    .ff-side-fade,
+    .ff-side-heading,
+    .ff-tip { transition: none; }
+    .ff-side-overlay { animation: none; }
+}
+
+/* ================= MATCH THEATER (Fun Match + Event) =================
+   Overlay full-screen: pratinjau XI di lapangan, tombol mulai di tengah,
+   lalu animasi pertandingan/mini-game di layar yang sama. */
+.theater-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 170;
+    display: flex;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(49, 87, 213, 0.28), transparent 55%),
+        radial-gradient(circle at 50% 100%, rgba(16, 185, 129, 0.14), transparent 55%),
+        linear-gradient(180deg, #050b1a 0%, #0a1228 55%, #050b1a 100%);
+    overflow: hidden;
+}
+.theater-shell {
+    width: 100%;
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 12px 14px 16px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+}
+.theater-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+}
+.theater-kicker {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #93c5fd;
+}
+.theater-sub {
+    margin-top: 2px;
+    font-size: 10px;
+    color: #7c8cb0;
+}
+.theater-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(124, 140, 255, 0.35);
+    background: rgba(15, 26, 51, 0.75);
+    color: #cbd5f5;
+    transition: all 0.2s ease;
+}
+.theater-close:hover {
+    color: #fff;
+    border-color: rgba(124, 140, 255, 0.8);
+    background: rgba(49, 87, 213, 0.45);
+}
+
+.theater-duel,
+.theater-scoreboard {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.theater-team { min-width: 0; }
+.theater-team--left { text-align: left; }
+.theater-team--right { text-align: right; }
+.theater-team-name {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(0.72rem, 2.4vw, 0.95rem);
+    font-weight: 800;
+    color: #f5f7ff;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.theater-team-meta {
+    margin-top: 2px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #8b9bbd;
+}
+.theater-vs-chip {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 900;
+    color: #c7d2fe;
+    border: 1px solid rgba(124, 140, 255, 0.4);
+    background: rgba(15, 26, 51, 0.7);
+}
+.theater-clockbox { text-align: center; min-width: 92px; }
+.theater-score {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.6rem, 5.4vw, 2.4rem);
+    font-weight: 900;
+    line-height: 1;
+    color: #f5f7ff;
+    font-variant-numeric: tabular-nums;
+}
+.theater-score--mini { font-size: clamp(1.1rem, 3.6vw, 1.5rem); color: #fcd34d; letter-spacing: 0.12em; }
+.theater-clock {
+    margin-top: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #f87171;
+    font-variant-numeric: tabular-nums;
+}
+.theater-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #ef4444;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+    animation: theaterLivePulse 1.4s ease-out infinite;
+}
+.theater-live-dot.is-static { animation: none; background: #94a3b8; box-shadow: none; }
+@keyframes theaterLivePulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55); }
+    100% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+.theater-progress {
+    margin-top: 8px;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(30, 41, 59, 0.9);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.theater-progress > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #3157d5, #34d399);
+    transition: width 0.7s ease;
+}
+
+.theater-stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0;
+}
+.theater-stage--center { padding: 16px 0; }
+
+.theater-pitch {
+    --tp-size: clamp(22px, 7.6%, 38px);
+    position: relative;
+    width: min(92vw, 44dvh, 500px);
+    aspect-ratio: 3 / 4;
+    flex-shrink: 0;
+    border-radius: 18px;
+    border: 1px solid rgba(124, 140, 255, 0.32);
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(49, 87, 213, 0.22) 0%, rgba(5, 11, 26, 0.55) 70%),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0px, rgba(255, 255, 255, 0.035) 34px, transparent 34px, transparent 68px),
+        linear-gradient(180deg, #0a1228 0%, #071021 100%);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.55), 0 18px 50px -20px rgba(0, 0, 0, 0.8);
+}
+.theater-pitch--preview { filter: saturate(0.9) brightness(0.92); }
+
+.theater-line { position: absolute; pointer-events: none; }
+.theater-line--halfway { top: 50%; left: 4%; right: 4%; height: 1px; background: rgba(148, 163, 184, 0.35); }
+.theater-line--circle {
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 22%; aspect-ratio: 1; border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+}
+.theater-line--box {
+    left: 50%; transform: translateX(-50%);
+    width: 54%; height: 12%;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+.theater-line--box-top { top: 0; border-top: none; }
+.theater-line--box-bottom { bottom: 0; border-bottom: none; }
+.theater-line--goal {
+    left: 50%; transform: translateX(-50%);
+    width: 24%; height: 3.5%;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: rgba(148, 163, 184, 0.08);
+}
+.theater-line--goal-top { top: 0; border-top: none; }
+.theater-line--goal-bottom { bottom: 0; border-bottom: none; }
+
+.theater-token {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    z-index: 3;
+    pointer-events: none;
+    transition: left 0.8s ease, top 0.8s ease;
+}
+.theater-token-circle {
+    width: var(--tp-size);
+    height: var(--tp-size);
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    font-size: calc(var(--tp-size) * 0.4);
+    line-height: 1;
+    border: 2px solid;
+    color: #f8fafc;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+.theater-token--home .theater-token-circle {
+    background: linear-gradient(160deg, #12558a, #082238);
+    border-color: #67e8f9;
+    box-shadow: 0 0 0 1px rgba(103, 232, 249, 0.25), 0 5px 14px rgba(0, 0, 0, 0.55);
+}
+.theater-token--away .theater-token-circle {
+    background: linear-gradient(160deg, #8a1c1c, #380808);
+    border-color: #fda4af;
+    box-shadow: 0 0 0 1px rgba(253, 164, 175, 0.25), 0 5px 14px rgba(0, 0, 0, 0.55);
+}
+.theater-token-name {
+    max-width: 64px;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #e2e8f5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+}
+
+.theater-ball {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    font-size: calc(var(--tp-size) * 0.58);
+    color: #f8fafc;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
+    transition: left 0.9s linear, top 0.9s linear;
+    animation: theaterBallSpin 1.6s linear infinite;
+}
+@keyframes theaterBallSpin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.theater-goal-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.6rem, 7vw, 3rem);
+    font-weight: 900;
+    color: #6ee7b7;
+    text-shadow: 0 0 28px rgba(16, 185, 129, 0.85), 0 3px 10px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    animation: theaterGoalPop 1.25s ease-out both;
+}
+.theater-goal-flash > span { color: #f5f7ff; font-size: 0.62em; }
+@keyframes theaterGoalPop {
+    0% { opacity: 0; transform: scale(0.72); }
+    18% { opacity: 1; transform: scale(1.06); }
+    72% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.08); }
+}
+
+.theater-start-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    pointer-events: none;
+}
+.theater-vs-badge {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 900;
+    color: #c7d2fe;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    background: rgba(5, 11, 26, 0.85);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+.theater-start-btn {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 26px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    animation: theaterStartPulse 2.4s ease-in-out infinite;
+}
+@keyframes theaterStartPulse {
+    0%, 100% { box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35), 0 0 0 0 rgba(243, 199, 96, 0.5); }
+    50% { box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6), 0 0 0 10px rgba(243, 199, 96, 0); }
+}
+
+.theater-result-panel {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 24px;
+    text-align: center;
+    background: rgba(5, 11, 26, 0.84);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 18px;
+}
+.theater-result-kicker {
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #93c5fd;
+}
+.theater-result-score {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.4rem, 11vw, 4rem);
+    font-weight: 900;
+    line-height: 1.05;
+    color: #f5f7ff;
+    font-variant-numeric: tabular-nums;
+}
+.theater-result-score--gold { color: #f3c760; text-shadow: 0 0 30px rgba(212, 175, 55, 0.45); }
+.theater-result-meta {
+    font-size: 10px;
+    color: #94a3b8;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.theater-result-btn {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.theater-skip {
+    position: absolute;
+    top: 8px;
+    right: 4px;
+    z-index: 8;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #cbd5f5;
+    border: 1px solid rgba(124, 140, 255, 0.35);
+    background: rgba(5, 11, 26, 0.75);
+    backdrop-filter: blur(6px);
+}
+.theater-skip:hover { color: #fff; border-color: rgba(124, 140, 255, 0.75); }
+
+.theater-feed {
+    flex-shrink: 0;
+    display: flex;
+    gap: 6px;
+    padding-top: 6px;
+    min-height: 40px;
+}
+.theater-feed-item {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: rgba(15, 26, 51, 0.7);
+    border: 1px solid rgba(124, 140, 255, 0.16);
+    font-size: 10px;
+}
+.theater-feed-minute {
+    font-size: 9px;
+    font-weight: 900;
+    color: #cbd5f5;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+.theater-feed-card {
+    width: 7px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    background: #facc15;
+    border: 1px solid #fef08a;
+}
+.theater-feed-card.is-red { background: #dc2626; border-color: #fca5a5; }
+.theater-feed-text { min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.theater-feed-text b {
+    color: #f5f7ff;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.theater-feed-team {
+    font-size: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.theater-feed-team.is-home { color: #67e8f9; }
+.theater-feed-team.is-away { color: #fda4af; }
+.theater-feed-empty {
+    flex: 1;
+    align-self: center;
+    text-align: center;
+    font-size: 10px;
+    color: #7c8cb0;
+}
+
+.theater-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: #cbd5f5;
+    font-size: 12px;
+    font-weight: 700;
+}
+.theater-spinner {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 3px solid rgba(124, 140, 255, 0.25);
+    border-top-color: #7c8cff;
+    animation: theaterSpin 0.9s linear infinite;
+}
+@keyframes theaterSpin { to { transform: rotate(360deg); } }
+
+.theater-error {
+    width: min(92vw, 440px);
+    padding: 24px;
+    border-radius: 24px;
+    text-align: center;
+}
+.theater-error > i { font-size: 28px; color: #fca5a5; }
+.theater-error > p { margin-top: 10px; font-size: 12px; color: #e2e8f5; line-height: 1.5; }
+.theater-error-actions {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.theater-minigame { width: min(92vw, 460px); }
+
+.theater-hint {
+    flex-shrink: 0;
+    padding-top: 6px;
+    text-align: center;
+    font-size: 9px;
+    color: #7c8cb0;
+}
+.theater-hint > i { margin-right: 4px; color: #93c5fd; }
+
+@media (max-width: 480px) {
+    .theater-feed-item:nth-child(n + 3) { display: none; }
+    .theater-token-name { font-size: 7px; max-width: 52px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theater-token,
+    .theater-ball,
+    .theater-progress > span { transition: none; }
+    .theater-live-dot,
+    .theater-ball,
+    .theater-goal-flash,
+    .theater-start-btn,
+    .theater-spinner { animation: none; }
+}

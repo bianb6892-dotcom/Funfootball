@@ -37,7 +37,11 @@ export function AdminMatches() {
                                 <td className="p-4 text-center font-display font-black text-gold-300 text-base">
                                     {m.challenger_score} - {m.opponent_score}
                                 </td>
-                                <td className="p-4 text-center text-white font-semibold">#{m.opponent_id} ({m.opponent_ovr})</td>
+                                <td className="p-4 text-center text-white font-semibold">
+                                    {m.opponent_id
+                                        ? `#${m.opponent_id} (${m.opponent_ovr})`
+                                        : <span title={`Fun Match vs ${m.snapshot?.fun_team?.name || 'Tim CPU'} · Level ${m.snapshot?.difficulty_label || m.difficulty || '—'}`}>🤖 {m.snapshot?.fun_team?.name || 'CPU'} ({m.opponent_ovr})</span>}
+                                </td>
                                 <td className="p-4 text-center text-midnight-200">{m.result}</td>
                             </tr>
                         ))}

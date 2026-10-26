@@ -2,19 +2,39 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { StatWidget, PlayerCard } from '../../components/common';
 import { PlayerDetail } from '../../components/PlayerModals';
+import { errMsg } from '../../utils/game';
 
 export function Dashboard() {
-    const { user } = useAuth();
+    const { user, refresh } = useAuth();
+    const toast = useToast();
     const [stats, setStats] = useState(null);
     const [lineup, setLineup] = useState(null);
     const [detail, setDetail] = useState(null);
+    const [daily, setDaily] = useState(null);
+    const [claiming, setClaiming] = useState(false);
 
     useEffect(() => {
         api.players({ per_page: 4, sort: 'ovr-desc' }).then(({ data }) => setStats(data));
         api.lineup().then(({ data }) => setLineup(data)).catch(() => {});
+        api.dailyStatus().then(({ data }) => setDaily(data)).catch(() => {});
     }, []);
+
+    const claimDaily = async () => {
+        setClaiming(true);
+        try {
+            const { data } = await api.dailyClaim();
+            setDaily(data);
+            toast(`+${data.tokens_granted} token diklaim! Streak ${data.streak} hari.`, 'fa-ticket');
+            try { await refresh(); } catch { /* abaikan */ }
+        } catch (err) {
+            toast(errMsg(err, 'Klaim gagal.'), 'fa-circle-exclamation');
+        } finally {
+            setClaiming(false);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -31,6 +51,31 @@ export function Dashboard() {
                     <StatWidget icon="fa-users" label="Line-Up" value={`${lineup?.filled ?? 0}/11`} />
                     <StatWidget icon="fa-coins" label="Coins" value={(user?.coins ?? 0).toLocaleString('id-ID')} accent="text-gold-300" />
                 </div>
+            </div>
+
+            <div className="ff-card p-6 rounded-3xl flex flex-wrap items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-400 text-xl shrink-0">
+                    <i className="fa-solid fa-ticket"></i>
+                </div>
+                <div className="flex-1 min-w-[200px]">
+                    <h3 className="font-display font-bold text-white text-sm uppercase tracking-wider">
+                        Klaim Harian Token
+                    </h3>
+                    <p className="text-[11px] text-midnight-300 mt-0.5">
+                        {daily
+                            ? (daily.can_claim
+                                ? `Siap diklaim: +${daily.claim_amount} token (streak ${daily.next_streak} hari). Token dipakai untuk masuk challenge event.`
+                                : `Sudah diklaim hari ini (streak ${daily.streak} hari). Besok dapat +${daily.claim_amount} token.`)
+                            : 'Memuat status klaim...'}
+                    </p>
+                </div>
+                <button
+                    onClick={claimDaily}
+                    disabled={claiming || !daily?.can_claim}
+                    className="gold-btn px-5 py-2.5 rounded-xl text-xs font-black uppercase disabled:opacity-50"
+                >
+                    {claiming ? 'Mengklaim...' : daily?.can_claim ? `Klaim +${daily?.claim_amount ?? 3}` : 'Sudah Diklaim'}
+                </button>
             </div>
 
             <div className="ff-card p-6 rounded-3xl">

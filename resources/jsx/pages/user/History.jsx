@@ -35,29 +35,38 @@ export function History() {
         <div className="space-y-6">
             <div className="ff-card p-6 rounded-3xl">
                 <h2 className="font-display text-xl font-black ff-gradient-text">RIWAYAT PERTANDINGAN</h2>
-                <p className="text-xs text-midnight-300 mt-1">Semua laga PvP yang kamu mainkan.</p>
+                <p className="text-xs text-midnight-300 mt-1">Semua laga PvP dan Fun Match yang kamu mainkan.</p>
             </div>
 
             {matches.length === 0 ? (
-                <EmptyState icon="fa-trophy" title="Belum Ada Pertandingan" subtitle="Tantang manajer lain di halaman Match / PvP." />
+                <EmptyState icon="fa-trophy" title="Belum Ada Pertandingan" subtitle="Tantang manajer lain di halaman Match / PvP, atau lawan tim besar di Fun Match." />
             ) : (
                 <div className="space-y-3">
                     {matches.map((m) => {
                         const r = row(m);
+                        const isFun = !m.opponent_id;
                         return (
                             <div
                                 key={m.id}
                                 onClick={() => setDetail(m)}
                                 className="ff-card p-4 rounded-2xl flex items-center gap-4 cursor-pointer hoverable"
                             >
-                                <span className={`px-3 py-1 rounded-lg text-[10px] font-black tracking-wider border shrink-0 ${r.cls}`}>
-                                    {r.outcome}
+                                <span className="flex flex-col gap-1 shrink-0">
+                                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black tracking-wider border ${r.cls}`}>
+                                        {r.outcome}
+                                    </span>
+                                    {isFun && (
+                                        <span className="px-3 py-1 rounded-lg text-[9px] font-black tracking-wider border border-cyan-300/50 bg-cyan-500/10 text-cyan-200" title={`Fun Match vs ${m.snapshot?.fun_team?.name || 'Tim CPU'} (${m.snapshot?.difficulty_label || m.difficulty || ''})`}>
+                                            <i className="fa-solid fa-gamepad mr-1"></i>FUN
+                                        </span>
+                                    )}
                                 </span>
                                 <div className="flex-1 text-center">
                                     <p className="font-display font-extrabold text-xl text-white">
                                         {r.myScore} <span className="text-midnight-300 text-sm">-</span> {r.opScore}
                                     </p>
                                     <p className="text-[10px] text-midnight-300">
+                                        {isFun ? `vs ${m.snapshot?.fun_team?.name || 'Tim CPU'}` : null}{isFun ? ' · ' : null}
                                         OVR {r.myOvr} vs {r.opOvr} &middot; {timeID(m.played_at)}
                                     </p>
                                 </div>
@@ -87,6 +96,12 @@ export function History() {
                             {detail.challenger_score} - {detail.opponent_score}
                         </h3>
                         <p className="text-center text-[11px] text-midnight-300 mb-5">
+                            {!detail.opponent_id && (
+                                <span className="text-cyan-200 font-bold">
+                                    <i className="fa-solid fa-gamepad mr-1"></i>
+                                    Fun Match vs {detail.snapshot?.fun_team?.name || 'Tim CPU'} &middot; Level {detail.snapshot?.difficulty_label || detail.difficulty || '—'} &middot;
+                                </span>
+                            )}{' '}
                             OVR {detail.challenger_ovr} vs {detail.opponent_ovr} &middot; {timeID(detail.played_at)}
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

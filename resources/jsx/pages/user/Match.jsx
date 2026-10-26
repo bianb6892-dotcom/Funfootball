@@ -2,16 +2,22 @@ import { useEffect, useState } from 'react';
 import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { LiveMatch } from '../../components/LiveMatch';
+import { MatchEvents } from '../../components/MatchEvents';
+import { PackReward } from '../../components/PackReward';
+import { RankBadge } from '../../components/common';
 import { errMsg } from '../../utils/game';
 
 export function Match() {
-    const { user } = useAuth();
+    const { user, refresh } = useAuth();
     const toast = useToast();
     const [opponents, setOpponents] = useState([]);
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [fighting, setFighting] = useState(null);
+    const [live, setLive] = useState(null); // data match yang sedang disiarkan live
     const [result, setResult] = useState(null);
+    const [reward, setReward] = useState(null); // { pack, draws } → overlay buka pack
 
     useEffect(() => {
         api.opponents(page).then(({ data }) => {
@@ -23,14 +29,34 @@ export function Match() {
     const challenge = async (opp) => {
         setFighting(opp.id);
         setResult(null);
+        setLive(null);
+        setReward(null);
         try {
             const { data } = await api.challenge(opp.id);
-            setResult({ ...data, opp });
+            // Hasil sudah dihitung server; jalankan siaran live-nya dulu.
+            setLive({ ...data, opp });
         } catch (err) {
             toast(errMsg(err, 'Tantangan gagal.'), 'fa-circle-exclamation');
         } finally {
             setFighting(null);
         }
+    };
+
+    // Dipanggil dari layar "Peluit akhir": tampilkan hasil, lalu bila menang
+    // dan ada hadiah pack → langsung ke animasi membuka pack.
+    const finishLive = () => {
+        if (!live) return;
+        setResult(live);
+        setLive(null);
+        if (live.result === 'challenger_win' && live.reward_draws?.length) {
+            setReward({ pack: live.reward_pack, draws: live.reward_draws });
+        }
+        refresh().catch(() => {});
+    };
+
+    const closeReward = () => {
+        setReward(null);
+        refresh().catch(() => {});
     };
 
     const verdict = (m) => {
@@ -51,7 +77,16 @@ export function Match() {
                 </p>
             </div>
 
-            {result && (
+            {live && (
+                <LiveMatch
+                    details={live.snapshot?.details}
+                    home={user.team_name}
+                    away={live.opp.team_name}
+                    onDone={finishLive}
+                />
+            )}
+
+            {result && !live && (
                 <div className="ff-card p-6 rounded-3xl text-center">
                     <h3 className="font-display font-bold text-midnight-200 text-sm uppercase tracking-wider mb-4">Hasil Pertandingan</h3>
                     <div className="flex items-center justify-center gap-6 flex-wrap">
@@ -62,8 +97,29 @@ export function Match() {
                     <p className={`font-display text-3xl font-black mt-4 ${verdict({ ...result, challenger_id: user.id }).cls}`}>
                         {verdict({ ...result, challenger_id: user.id }).text}
                     </p>
-                    <p className="text-[11px] text-midnight-300 mt-1">Snapshot line-up tersimpan di riwayat.</p>
+                    {result.result === 'challenger_win' && result.reward_draws?.length > 0 && !reward && (
+                        <div className="mt-4 rounded-2xl border border-gold-500/40 bg-gold-500/10 p-4 flex items-center gap-3 text-left flex-wrap">
+                            <i className="fa-solid fa-gift text-gold-300 text-2xl shrink-0"></i>
+                            <div className="flex-1 min-w-[180px]">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-gold-300">Hadiah kemenangan: {result.reward_pack?.name || 'Pack'}</p>
+                                <p className="text-xs text-white font-bold mt-0.5">
+                                    {result.reward_draws[0]?.name} (OVR {result.reward_draws[0]?.ovr}) <RankBadge rank={result.reward_draws[0]?.rank_rolled} />
+                                </p>
+                            </div>
+                            <button onClick={() => setReward({ pack: result.reward_pack, draws: result.reward_draws })} className="gold-btn px-5 py-2.5 rounded-xl text-[11px] font-black uppercase">
+                                <i className="fa-solid fa-box-open mr-1"></i> Buka Hadiah
+                            </button>
+                        </div>
+                    )}
+                    <p className="text-[11px] text-midnight-300 mt-3">Snapshot line-up tersimpan di riwayat.</p>
+                    <div className="mt-4 text-left">
+                        <MatchEvents details={result.snapshot?.details} home={user.team_name} away={result.opp.team_name} />
+                    </div>
                 </div>
+            )}
+
+            {reward && (
+                <PackReward pack={reward.pack} draws={reward.draws} onClose={closeReward} />
             )}
 
             <div className="ff-card p-5 rounded-2xl">

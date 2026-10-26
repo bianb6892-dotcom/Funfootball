@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CoinTransaction;
+use App\Models\TokenTransaction;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -27,11 +28,19 @@ class AuthController extends Controller
             'role' => 'user',
             'team_name' => $data['team_name'],
             'coins' => 1000,
+            'event_tokens' => TokenController::REGISTER_BONUS_TOKENS,
         ]);
 
         CoinTransaction::create([
             'user_id' => $user->id, 'type' => 'register_bonus',
             'amount' => 1000, 'balance_after' => 1000, 'description' => 'Starter coins',
+        ]);
+
+        TokenTransaction::create([
+            'user_id' => $user->id, 'type' => 'register_bonus',
+            'amount' => TokenController::REGISTER_BONUS_TOKENS,
+            'balance_after' => $user->event_tokens,
+            'description' => 'Starter tokens',
         ]);
 
         return response()->json([

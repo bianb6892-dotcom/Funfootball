@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
-import { Modal, RankBadge, OvrBadge, PlayerAvatar, StatRow, CountryFlag } from './common';
-import { POS_STYLE, RANK_ICON } from '../utils/game';
+import { Modal, RankBadge, OvrBadge, PlayerAvatar, StatRow, CountryFlag, FootBadge } from './common';
+import { POS_STYLE, RANK_ICON, altPositionsOf, cardOf, naturalPositionsOf } from '../utils/game';
+import { codeFor } from '../utils/countries';
+import { DETAIL_GROUPS, GK_DETAIL_GROUP, detailedStatsOf } from '../utils/playerAttributes';
 
 const WEIGHTS = {
     GK: { div: 0.2, han: 0.2, kic: 0.1, ref: 0.25, spd: 0.05, pos: 0.2 },
@@ -15,16 +17,41 @@ const STAT_LABELS = {
     div: 'Diving', han: 'Handling', kic: 'Kicking', ref: 'Reflexes', spd: 'Speed', pos: 'Positioning',
 };
 
+const POS_GROUP = {
+    GK: 'GK',
+    LB: 'DF', CB: 'DF', RB: 'DF', DF: 'DF',
+    LM: 'MF', CM: 'MF', CDM: 'MF', CAM: 'MF', RM: 'MF', MF: 'MF',
+    LW: 'FW', ST: 'FW', SS: 'FW', RW: 'FW', FW: 'FW',
+};
+const baseGroup = (pos) => POS_GROUP[String(pos || '').toUpperCase()] || 'MF';
+
+function DetailStatRow({ label, value }) {
+    return (
+        <div className="flex items-center gap-2 text-[11px]">
+            <span className="flex-1 truncate text-midnight-300">{label}</span>
+            <span className="w-6 text-right font-bold text-midnight-100">{value}</span>
+            <div className="h-1.5 w-14 shrink-0 overflow-hidden rounded-full bg-midnight-800">
+                <div className="h-full rounded-full bg-gradient-to-r from-midnight-600 to-midnight-300" style={{ width: `${value}%` }}></div>
+            </div>
+        </div>
+    );
+}
+
 export function PlayerDetail({ player, onClose, onCompare }) {
     if (!player) return null;
-    const w = WEIGHTS[player.position] || WEIGHTS.MF;
-    const keys = player.position === 'GK'
+    const group = baseGroup(player.position);
+    const alts = altPositionsOf(player);
+    const naturals = naturalPositionsOf(player);
+    const w = WEIGHTS[group] || WEIGHTS.MF;
+    const keys = group === 'GK'
         ? ['div', 'han', 'kic', 'ref', 'spd', 'pos']
         : ['pac', 'sho', 'pas', 'dri', 'def', 'phy'];
     const stats = keys.map((key) => [STAT_LABELS[key], player[key], w[key]]);
+    const detailed = detailedStatsOf(player);
+    const detailGroups = group === 'GK' ? [GK_DETAIL_GROUP, ...DETAIL_GROUPS] : DETAIL_GROUPS;
 
     return (
-        <Modal open={!!player} onClose={onClose}>
+        <Modal open={!!player} onClose={onClose} maxWidth="max-w-3xl">
             <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
                 <div className="w-40 h-48 rounded-2xl overflow-hidden bg-midnight-950 border border-midnight-400/35 shrink-0 shadow-lg relative">
                     <PlayerAvatar player={player} />
@@ -32,23 +59,39 @@ export function PlayerDetail({ player, onClose, onCompare }) {
                         #{player.shirt_number}
                     </div>
                     <div className="absolute bottom-2 left-2">
-                        <RankBadge rank={player.rank} />
+                        <RankBadge rank={cardOf(player)} />
                     </div>
                 </div>
                 <div className="flex-1 text-center md:text-left space-y-2 min-w-0">
                     <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
-                        <span className={`px-3 py-1 rounded-lg bg-gradient-to-r ${POS_STYLE[player.position]} border font-bold text-xs uppercase tracking-wider`}>
+                        <span className={`px-3 py-1 rounded-lg bg-gradient-to-r ${POS_STYLE[player.position] || POS_STYLE.MF} border font-bold text-xs uppercase tracking-wider`}>
                             {player.position}
                         </span>
+                        {alts.map((alt) => (
+                            <span
+                                key={alt}
+                                title={`Posisi alternatif ${alt} — dipasang di ${alt} OVR tidak turun`}
+                                className={`px-2.5 py-1 rounded-lg bg-gradient-to-r ${POS_STYLE[alt] || POS_STYLE.MF} border border-dashed font-bold text-[11px] uppercase tracking-wider opacity-90`}
+                            >
+                                <i className="fa-solid fa-shuffle mr-1 text-[9px]"></i>{alt}
+                            </span>
+                        ))}
                         <span className="text-xs text-midnight-300 font-medium flex items-center gap-1.5">
-                            <CountryFlag code={player.country_code} />
+                            <CountryFlag code={codeFor(player)} />
                             {player.nationality}
                         </span>
                     </div>
                     <h2 className="font-display text-3xl font-bold text-white">{player.name}</h2>
-                    <p className="text-sm text-midnight-300 font-medium">
-                        {player.club} &bull; {player.age} Tahun
+                    <p className="text-sm text-midnight-300 font-medium flex items-center justify-center md:justify-start gap-2 flex-wrap">
+                        <span>{player.club} &bull; {player.age} Tahun</span>
+                        <FootBadge foot={player?.preferred_foot} />
                     </p>
+                    {alts.length > 0 && (
+                        <p className="text-[11px] text-emerald-300/90 font-medium flex items-center justify-center md:justify-start gap-1.5">
+                            <i className="fa-solid fa-circle-check text-[11px]"></i>
+                            Natural di {naturals.join(' · ')} — OVR utuh tanpa penalti posisi
+                        </p>
+                    )}
                     <div className="pt-3 flex items-center justify-center md:justify-start gap-4">
                         <div className="ovr-badge px-5 py-2 rounded-xl text-center">
                             <span className="text-[10px] uppercase block tracking-wider opacity-80">Overall</span>
@@ -59,11 +102,30 @@ export function PlayerDetail({ player, onClose, onCompare }) {
             </div>
             <div className="pt-4 mt-6 border-t border-midnight-400/20">
                 <h4 className="font-display text-base font-bold text-midnight-200 mb-4 flex items-center gap-2">
-                    <i className="fa-solid fa-chart-simple text-sm"></i> ATRIBUT PERMAINAN
+                    <i className="fa-solid fa-chart-simple text-sm"></i> RINGKASAN ATRIBUT
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {stats.map(([label, value, weight]) => (
                         <StatRow key={label} label={label} value={value} weight={weight} />
+                    ))}
+                </div>
+            </div>
+            <div className="pt-4 mt-4 border-t border-midnight-400/20">
+                <h4 className="font-display text-base font-bold text-midnight-200 mb-4 flex items-center gap-2">
+                    <i className="fa-solid fa-list-check text-sm"></i> ATRIBUT DETAIL
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {detailGroups.map((grp) => (
+                        <div key={grp.key} className="rounded-xl border border-midnight-700/70 bg-midnight-950/50 p-3">
+                            <div className="mb-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-midnight-200">
+                                <i className={`fa-solid ${grp.icon} text-midnight-400`}></i>{grp.label}
+                            </div>
+                            <div className="space-y-1.5">
+                                {grp.fields.map(([key, label]) => (
+                                    <DetailStatRow key={key} label={label} value={detailed[key]} />
+                                ))}
+                            </div>
+                        </div>
                     ))}
                 </div>
             </div>
@@ -139,11 +201,12 @@ export function CompareModal({ open, onClose, initialId, allPlayers }) {
                         {result.players.map((p) => (
                             <div key={p.id} className="bg-midnight-950/80 p-4 rounded-2xl border border-midnight-700">
                                 <h4 className="font-display font-bold text-white">{p.name}</h4>
-                                <p className="text-xs text-midnight-300 font-semibold">
-                                    {p.club} &middot; {p.position}
+                                <p className="text-xs text-midnight-300 font-semibold flex items-center justify-center gap-1.5 flex-wrap">
+                                    <span>{p.club} &middot; {p.position}</span>
+                                    <FootBadge foot={p?.preferred_foot} size="xs" />
                                 </p>
                                 <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-                                    <RankBadge rank={p.rank} />
+                                    <RankBadge rank={cardOf(p)} />
                                     <OvrBadge ovr={p.ovr} />
                                 </div>
                             </div>

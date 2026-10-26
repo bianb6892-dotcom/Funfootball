@@ -135,12 +135,25 @@ function UserDetail({ data, onChanged }) {
     const toast = useToast();
     const [amount, setAmount] = useState('');
     const [desc, setDesc] = useState('');
+    const [tokenAmount, setTokenAmount] = useState('');
+    const [tokenDesc, setTokenDesc] = useState('');
     const { user } = data;
 
     const adjust = async () => {
         try {
             await api.adminAdjustCoins(user.id, { amount: Number(amount), description: desc || undefined });
             toast('Coins diadjust.');
+            const { data: fresh } = await api.adminUserDetail(user.id);
+            onChanged(fresh);
+        } catch (err) {
+            toast(errMsg(err), 'fa-circle-exclamation');
+        }
+    };
+
+    const adjustTokens = async () => {
+        try {
+            await api.adminAdjustTokens(user.id, { amount: Number(tokenAmount), description: tokenDesc || undefined });
+            toast('Token diadjust.');
             const { data: fresh } = await api.adminUserDetail(user.id);
             onChanged(fresh);
         } catch (err) {
@@ -155,6 +168,7 @@ function UserDetail({ data, onChanged }) {
                 <p className="text-xs text-midnight-300">{user.email} &middot; {user.user_players_count} koleksi</p>
                 <p className="font-display text-2xl font-black text-gold-300 mt-2">
                     {Number(user.coins).toLocaleString('id-ID')} <span className="text-xs text-midnight-300 font-sans font-semibold">coins</span>
+                    <span className="ml-3 text-sky-300">{Number(user.event_tokens ?? 0).toLocaleString('id-ID')}</span> <span className="text-xs text-midnight-300 font-sans font-semibold">token</span>
                 </p>
             </div>
 
@@ -177,6 +191,44 @@ function UserDetail({ data, onChanged }) {
                     <button onClick={adjust} className="gold-btn px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase">
                         Apply
                     </button>
+                </div>
+            </div>
+
+            <div className="bg-midnight-950/60 rounded-2xl border border-midnight-700/60 p-4">
+                <h4 className="text-xs font-bold text-midnight-200 uppercase mb-3">Adjust Token Event</h4>
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                        type="number"
+                        value={tokenAmount}
+                        onChange={(e) => setTokenAmount(e.target.value)}
+                        placeholder="+5 / -2"
+                        className="flex-1 bg-midnight-950 text-sm text-white p-2.5 rounded-xl border border-midnight-700 focus:outline-none"
+                    />
+                    <input
+                        value={tokenDesc}
+                        onChange={(e) => setTokenDesc(e.target.value)}
+                        placeholder="Keterangan"
+                        className="flex-1 bg-midnight-950 text-sm text-white p-2.5 rounded-xl border border-midnight-700 focus:outline-none"
+                    />
+                    <button onClick={adjustTokens} className="gold-btn px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase">
+                        Apply
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <h4 className="text-xs font-bold text-midnight-200 uppercase mb-2">History Token (20 terakhir)</h4>
+                <div className="space-y-1.5 max-h-56 overflow-y-auto">
+                    {(data.tokens_history || []).map((t) => (
+                        <div key={t.id} className="flex items-center justify-between text-[11px] bg-midnight-950/60 rounded-lg px-3 py-2">
+                            <span className="text-white">{t.description || t.type}</span>
+                            <span className={`font-bold ${t.amount >= 0 ? 'text-sky-300' : 'text-red-400'}`}>
+                                {t.amount >= 0 ? '+' : ''}{t.amount}🎟
+                            </span>
+                            <span className="text-midnight-300">{timeID(t.created_at)}</span>
+                        </div>
+                    ))}
+                    {(data.tokens_history || []).length === 0 && <p className="text-[11px] text-midnight-300">Belum ada transaksi token.</p>}
                 </div>
             </div>
 

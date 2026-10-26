@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Services\GameService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,7 +11,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'team_name', 'coins', 'is_active'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'team_name', 'coins', 'event_tokens', 'is_active'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -43,5 +42,15 @@ class User extends Authenticatable
     public function coinTransactions()
     {
         return $this->hasMany(CoinTransaction::class);
+    }
+
+    public function tokenTransactions()
+    {
+        return $this->hasMany(TokenTransaction::class);
+    }
+
+    public function dailyTokenClaim()
+    {
+        return $this->hasOne(DailyTokenClaim::class);
     }
 }
